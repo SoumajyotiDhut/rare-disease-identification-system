@@ -1,0 +1,25 @@
+# Data files
+data/
+*.pkl
+*.zip
+*.jpg
+*.jpeg
+*.png
+
+# Keep results JSONs
+!results/experiment_tracker.json
+!results/day1_summary.json
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Models
+*.pth
+*.pt
+*.h5
+
+# Environment
+.env
+venv/
