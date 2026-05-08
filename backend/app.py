@@ -1,5 +1,6 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 import torch
 import torch.nn.functional as F
 import torchvision.transforms as transforms
@@ -7,14 +8,19 @@ from PIL import Image
 import io
 import uvicorn
 from model_loader import load_models
+from database import (create_tables, get_db,
+                      save_prediction, get_analytics,
+                      PredictionRecord)
+from datetime import datetime
+import json
 
 app = FastAPI(
     title="Rare Disease Identification API",
-    description="Predicts Top-K rare diseases from symptoms and medical images",
-    version="1.0.0"
+    description="Predicts Top-K rare diseases from "
+                "symptoms and medical images",
+    version="2.0.0"
 )
 
-# Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,12 +28,15 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Load models on startup
+# Create DB tables on startup
+create_tables()
+
+# Load models
 print("Loading models...")
-model, tokenizer, le, label_remap, reverse_remap, device = load_models()
+model, tokenizer, le, label_remap, \
+    reverse_remap, device = load_models()
 print("✓ Ready")
 
-# Image transform
 img_transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -40,12 +49,15 @@ img_transform = transforms.Compose([
 @app.get("/")
 def root():
     return {
-        "message": "Rare Disease Identification API",
-        "status" : "running",
+        "message" : "Rare Disease Identification API",
+        "version" : "2.0",
+        "status"  : "running",
         "endpoints": {
-            "/predict"     : "POST — predict diseases from symptoms + image",
-            "/predict/text": "POST — predict from symptoms only",
-            "/health"      : "GET  — health check"
+            "/predict"     : "POST — image + symptoms",
+            "/predict/text": "POST — symptoms only",
+            "/health"      : "GET  — health check",
+            "/analytics"   : "GET  — prediction stats",
+            "/history"     : "GET  — prediction history"
         }
     }
 
@@ -57,19 +69,12 @@ def health():
 
 @app.post("/predict")
 async def predict(
-    symptoms: str = Form(...),
-    image: UploadFile = File(...),
-    top_k: int = Form(default=5)
+    symptoms : str = Form(...),
+    image    : UploadFile = File(...),
+    top_k    : int = Form(default=5),
+    db       : Session = Depends(get_db)
 ):
-    """
-    Predict Top-K diseases from symptoms + medical image
-
-    - symptoms: comma-separated symptom list
-    - image: medical image file (jpg/png)
-    - top_k: number of diseases to return (default 5)
-    """
     try:
-        # ── Process symptoms ───────────────────────────
         symptom_list = [s.strip().lower()
                         for s in symptoms.split(',')]
         symptom_text = ' [SEP] '.join(symptom_list)
@@ -82,13 +87,11 @@ async def predict(
             return_tensors='pt'
         )
 
-        # ── Process image ──────────────────────────────
-        img_bytes = await image.read()
-        img       = Image.open(
+        img_bytes  = await image.read()
+        img        = Image.open(
             io.BytesIO(img_bytes)).convert('RGB')
         img_tensor = img_transform(img).unsqueeze(0)
 
-        # ── Run inference ──────────────────────────────
         with torch.no_grad():
             logits = model(
                 enc['input_ids'].to(device),
@@ -99,12 +102,11 @@ async def predict(
             topk  = probs.topk(
                 min(top_k, probs.size(1)), dim=1)
 
-        # ── Build response ─────────────────────────────
         predictions = []
         for i in range(topk.indices.size(1)):
-            label_idx    = topk.indices[0][i].item()
-            prob         = topk.values[0][i].item()
-            orig_label   = reverse_remap.get(
+            label_idx  = topk.indices[0][i].item()
+            prob       = topk.values[0][i].item()
+            orig_label = reverse_remap.get(
                 label_idx, label_idx)
             try:
                 disease = le.inverse_transform(
@@ -116,16 +118,22 @@ async def predict(
                 "rank"       : i + 1,
                 "disease"    : disease,
                 "probability": round(prob * 100, 2),
-                "confidence" : "High" if prob > 0.5
+                "confidence" : "High"   if prob > 0.5
                                else "Medium" if prob > 0.2
                                else "Low"
             })
+
+        # Save to database
+        save_prediction(db, symptom_list,
+                        predictions,
+                        has_image=True, top_k=top_k)
 
         return {
             "status"     : "success",
             "symptoms"   : symptom_list,
             "predictions": predictions,
-            "top_k"      : top_k
+            "top_k"      : top_k,
+            "timestamp"  : str(datetime.utcnow())
         }
 
     except Exception as e:
@@ -134,10 +142,10 @@ async def predict(
 
 @app.post("/predict/text")
 async def predict_text(
-    symptoms: str = Form(...),
-    top_k: int = Form(default=5)
+    symptoms : str = Form(...),
+    top_k    : int = Form(default=5),
+    db       : Session = Depends(get_db)
 ):
-    """Predict using symptoms only — no image required"""
     try:
         symptom_list = [s.strip().lower()
                         for s in symptoms.split(',')]
@@ -151,7 +159,6 @@ async def predict_text(
             return_tensors='pt'
         )
 
-        # Use blank image for text-only prediction
         blank_img = torch.zeros(1, 3, 224, 224)
 
         with torch.no_grad():
@@ -180,18 +187,69 @@ async def predict_text(
                 "rank"       : i + 1,
                 "disease"    : disease,
                 "probability": round(prob * 100, 2),
-                "confidence" : "High" if prob > 0.5
+                "confidence" : "High"   if prob > 0.5
                                else "Medium" if prob > 0.2
                                else "Low"
             })
+
+        # Save to database
+        save_prediction(db, symptom_list,
+                        predictions,
+                        has_image=False, top_k=top_k)
 
         return {
             "status"     : "success",
             "symptoms"   : symptom_list,
             "predictions": predictions,
-            "top_k"      : top_k
+            "top_k"      : top_k,
+            "timestamp"  : str(datetime.utcnow())
         }
 
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/analytics")
+def analytics(db: Session = Depends(get_db)):
+    """Get prediction analytics — for dashboard"""
+    try:
+        data = get_analytics(db)
+        return {"status": "success", "data": data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/history")
+def history(
+    limit : int = 20,
+    db    : Session = Depends(get_db)
+):
+    """Get recent prediction history"""
+    try:
+        records = db.query(PredictionRecord)\
+            .order_by(
+                PredictionRecord.timestamp.desc()
+            ).limit(limit).all()
+
+        history = []
+        for r in records:
+            history.append({
+                "id"          : r.id,
+                "timestamp"   : str(r.timestamp),
+                "symptoms"    : r.symptoms,
+                "has_image"   : r.has_image,
+                "top1_disease": r.top1_disease,
+                "top1_prob"   : r.top1_prob,
+                "top5"        : json.loads(
+                    r.top5_diseases)
+                    if r.top5_diseases else []
+            })
+
+        return {
+            "status" : "success",
+            "count"  : len(history),
+            "history": history
+        }
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
