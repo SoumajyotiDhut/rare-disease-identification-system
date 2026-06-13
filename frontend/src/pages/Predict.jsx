@@ -1,7 +1,62 @@
 import { useState } from "react";
-import { Upload, Brain, Activity } from "lucide-react";
-import { FaSpinner } from "react-icons/fa";
-import { predictDisease } from "../services/api";
+import { predictDisease } from "../services/Api";
+
+const pageStyle = {
+  minHeight: "100vh",
+  background: "#0A1628",
+  color: "#F8FAFC",
+  fontFamily: "'Inter', sans-serif",
+  padding: "48px 32px",
+};
+
+const card = {
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: 24,
+  padding: 36,
+};
+
+const label = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#94A3B8",
+  letterSpacing: 0.8,
+  textTransform: "uppercase",
+  marginBottom: 10,
+  display: "block",
+};
+
+const input = {
+  width: "100%",
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: 12,
+  padding: "14px 18px",
+  color: "#F8FAFC",
+  fontSize: 15,
+  outline: "none",
+  fontFamily: "'Inter', sans-serif",
+  resize: "none",
+  boxSizing: "border-box",
+  transition: "border-color 0.2s",
+};
+
+const ConfidenceBadge = ({ conf }) => {
+  const map = {
+    High: { bg: "rgba(34,197,94,0.12)", color: "#22C55E", border: "rgba(34,197,94,0.3)" },
+    Medium: { bg: "rgba(251,191,36,0.12)", color: "#FBBF24", border: "rgba(251,191,36,0.3)" },
+    Low: { bg: "rgba(239,68,68,0.12)", color: "#EF4444", border: "rgba(239,68,68,0.3)" },
+  };
+  const s = map[conf] || map.Low;
+  return (
+    <span style={{
+      padding: "4px 12px", borderRadius: 100,
+      fontSize: 12, fontWeight: 600,
+      background: s.bg, color: s.color,
+      border: `1px solid ${s.border}`,
+    }}>{conf}</span>
+  );
+};
 
 function Predict() {
   const [symptoms, setSymptoms] = useState("");
@@ -9,347 +64,267 @@ function Predict() {
   const [preview, setPreview] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const handlePredict = async () => {
     if (!symptoms.trim()) {
-      alert("Please enter symptoms");
+      alert("Please enter at least one symptom.");
       return;
     }
-
     try {
       setLoading(true);
-
-      const data = await predictDisease(
-        symptoms,
-        image
-      );
-
+      const data = await predictDisease(symptoms, image);
       setResults(data.predictions || []);
-    } catch (error) {
-      console.log(error);
-      alert("Prediction failed");
+    } catch (e) {
+      console.error(e);
+      alert("Prediction failed. Check the API connection.");
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setSymptoms("");
-    setImage(null);
-    setPreview(null);
-    setResults([]);
+  const handleFile = (file) => {
+    if (!file) return;
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const reset = () => {
+    setSymptoms(""); setImage(null);
+    setPreview(null); setResults([]);
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-12">
+    <div style={pageStyle}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
-      {/* Header */}
-
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Disease Prediction
-        </h1>
-
-        <p className="text-slate-500 mt-2">
-          Upload symptoms and medical images
-          for AI-powered disease prediction
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8">
-
-        {/* LEFT PANEL */}
-
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-
-          <h2 className="font-semibold text-xl mb-6">
-            Patient Information
-          </h2>
-
-          {/* Upload Box */}
-
-          <div
-            className="
-            border-2
-            border-dashed
-            border-slate-300
-            rounded-2xl
-            p-10
-            text-center
-            "
-          >
-            <Upload
-              size={55}
-              className="mx-auto text-blue-600"
-            />
-
-            <p className="font-medium mt-4">
-              Upload Medical Image
-            </p>
-
-            <p className="text-slate-500 text-sm mt-2">
-              JPG, PNG supported
-            </p>
-
-            <input
-              id="image-upload"
-              type="file"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files[0];
-
-                setImage(file);
-
-                if (file) {
-                  setPreview(
-                    URL.createObjectURL(file)
-                  );
-                }
-              }}
-            />
-
-            <label
-              htmlFor="image-upload"
-              className="
-              inline-block
-              mt-5
-              bg-blue-600
-              text-white
-              px-5
-              py-3
-              rounded-xl
-              cursor-pointer
-              hover:bg-blue-700
-              transition
-              "
-            >
-              Browse Image
-            </label>
-
-            {preview && (
-              <img
-                src={preview}
-                alt="preview"
-                className="
-                mt-6
-                w-full
-                h-56
-                object-cover
-                rounded-xl
-                border
-                "
-              />
-            )}
-          </div>
-
-          {/* Symptoms */}
-
-          <div className="mt-6">
-            <label className="font-medium block mb-3">
-              Symptoms
-            </label>
-
-            <textarea
-              placeholder="Example: fever headache fatigue"
-              value={symptoms}
-              onChange={(e) =>
-                setSymptoms(e.target.value)
-              }
-              className="
-              w-full
-              h-40
-              border
-              border-slate-300
-              rounded-xl
-              p-4
-              focus:outline-none
-              focus:ring-2
-              focus:ring-blue-500
-              "
-            />
-          </div>
-
-          {/* Buttons */}
-
-          <div className="flex gap-4 mt-6">
-
-            <button
-              onClick={handlePredict}
-              className="
-              flex-1
-              bg-blue-600
-              text-white
-              py-4
-              rounded-xl
-              font-semibold
-              hover:bg-blue-700
-              transition
-              "
-            >
-              {loading ? (
-                <div className="flex justify-center items-center gap-3">
-                  <FaSpinner className="animate-spin" />
-                  Analyzing...
-                </div>
-              ) : (
-                "Predict Disease"
-              )}
-            </button>
-
-            <button
-              onClick={resetForm}
-              className="
-              px-6
-              border
-              border-slate-300
-              rounded-xl
-              hover:bg-slate-100
-              transition
-              "
-            >
-              Reset
-            </button>
-
-          </div>
-
+        {/* Header */}
+        <div style={{ marginBottom: 40 }}>
+          <p style={{ fontSize: 12, color: "#00D4C8", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>
+            DIAGNOSTIC ENGINE
+          </p>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 42, fontWeight: 800, margin: "0 0 10px", color: "#F8FAFC" }}>
+            Disease Prediction
+          </h1>
+          <p style={{ color: "#64748B", fontSize: 16 }}>
+            Enter patient symptoms and optionally upload a biomedical image for AI-powered differential diagnosis.
+          </p>
         </div>
 
-        {/* RIGHT PANEL */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+          {/* ── LEFT PANEL ── */}
+          <div style={card}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 28px", color: "#F8FAFC" }}>
+              Patient Input
+            </h2>
 
-          <h2 className="font-semibold text-xl mb-6">
-            Prediction Results
-          </h2>
-
-          {/* Top Disease */}
-
-          {results.length > 0 && (
+            {/* Drop zone */}
             <div
-              className="
-              bg-blue-50
-              border
-              border-blue-100
-              rounded-2xl
-              p-5
-              mb-6
-              "
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+              style={{
+                border: `2px dashed ${dragOver ? "#00D4C8" : "rgba(255,255,255,0.12)"}`,
+                borderRadius: 16,
+                padding: preview ? 0 : "48px 24px",
+                textAlign: "center",
+                background: dragOver ? "rgba(0,212,200,0.05)" : "rgba(255,255,255,0.02)",
+                transition: "all 0.2s",
+                overflow: "hidden",
+                cursor: "pointer",
+                marginBottom: 24,
+              }}
+              onClick={() => document.getElementById("img-input").click()}
             >
-              <h3 className="font-semibold">
-                Most Likely Disease
-              </h3>
-
-              <p className="text-2xl font-bold mt-2">
-                {results[0].disease}
-              </p>
-
-              <p className="text-slate-500 mt-1">
-                Probability:
-                {" "}
-                {results[0].probability}%
-              </p>
+              {preview ? (
+                <img src={preview} alt="preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+              ) : (
+                <>
+                  <div style={{ fontSize: 40, marginBottom: 14 }}>🩻</div>
+                  <p style={{ color: "#94A3B8", fontSize: 14, margin: "0 0 6px" }}>
+                    Drag & drop or click to upload
+                  </p>
+                  <p style={{ color: "#475569", fontSize: 12 }}>JPG, PNG · MRI, CT, Dermoscopy, Histopathology</p>
+                </>
+              )}
             </div>
-          )}
+            <input id="img-input" type="file" hidden accept="image/*"
+              onChange={e => handleFile(e.target.files[0])} />
 
-          {/* Empty State */}
-
-          {results.length === 0 && !loading && (
-            <div className="text-center py-20">
-              <Brain
-                size={60}
-                className="mx-auto text-slate-300"
+            {/* Symptoms */}
+            <div style={{ marginBottom: 24 }}>
+              <label style={label}>Symptoms</label>
+              <textarea
+                rows={6}
+                placeholder="e.g. progressive vision loss, angioid streaks, skin papules on neck, fatigue"
+                value={symptoms}
+                onChange={e => setSymptoms(e.target.value)}
+                style={input}
+                onFocus={e => e.target.style.borderColor = "rgba(0,212,200,0.5)"}
+                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
               />
-
-              <p className="mt-5 text-slate-500">
-                No predictions yet
+              <p style={{ fontSize: 12, color: "#475569", marginTop: 8 }}>
+                Separate multiple symptoms with commas or line breaks.
               </p>
             </div>
-          )}
 
-          {/* Results */}
-
-          <div className="space-y-5">
-
-            {results.map((item, index) => (
-              <div
-                key={index}
-                className="
-                border
-                border-slate-200
-                rounded-2xl
-                p-5
-                "
-              >
-                <div className="flex justify-between">
-
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      #{item.rank}
-                    </h3>
-
-                    <p className="font-medium">
-                      {item.disease}
-                    </p>
-                  </div>
-
-                  <Activity
-                    className="text-blue-600"
-                  />
-
-                </div>
-
-                <div className="mt-4">
-
-                  <div className="flex justify-between text-sm">
-                    <span>Probability</span>
-
-                    <span>
-                      {item.probability}%
-                    </span>
-                  </div>
-
-                  <div className="h-2 bg-slate-200 rounded-full mt-2">
-
-                    <div
-                      className="
-                      h-2
-                      bg-blue-600
-                      rounded-full
-                      "
-                      style={{
-                        width: `${item.probability}%`,
-                      }}
-                    />
-
-                  </div>
-
-                </div>
-
-                <div className="mt-4">
-
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      item.confidence === "High"
-                        ? "bg-green-100 text-green-700"
-                        : item.confidence === "Medium"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+            {/* Quick chips */}
+            <div style={{ marginBottom: 28 }}>
+              <p style={{ ...label, marginBottom: 10 }}>Quick Add</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {["fatigue", "night blindness", "skin lesions", "joint pain", "vision loss", "dry cough"].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setSymptoms(prev => prev ? `${prev}, ${s}` : s)}
+                    style={{
+                      background: "rgba(0,212,200,0.08)", border: "1px solid rgba(0,212,200,0.2)",
+                      color: "#00D4C8", padding: "6px 14px", borderRadius: 100,
+                      fontSize: 12, cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,212,200,0.16)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "rgba(0,212,200,0.08)"}
                   >
-                    {item.confidence}
-                  </span>
-
-                </div>
-
+                    + {s}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
 
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                onClick={handlePredict}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  background: loading ? "rgba(0,212,200,0.3)" : "linear-gradient(135deg, #00D4C8, #0066FF)",
+                  color: "#fff", border: "none",
+                  padding: "16px 24px", borderRadius: 12,
+                  fontWeight: 700, fontSize: 15,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontFamily: "'Inter', sans-serif",
+                  boxShadow: loading ? "none" : "0 8px 24px rgba(0,212,200,0.3)",
+                  transition: "all 0.2s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                }}
+              >
+                {loading ? (
+                  <>
+                    <span style={{
+                      width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)",
+                      borderTop: "2px solid #fff", borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite", display: "inline-block",
+                    }} />
+                    Analyzing…
+                  </>
+                ) : "Predict Disease"}
+              </button>
+              <button
+                onClick={reset}
+                style={{
+                  padding: "16px 24px", borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "transparent", color: "#94A3B8",
+                  cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                  fontSize: 14, fontWeight: 600,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                Reset
+              </button>
+            </div>
           </div>
 
-        </div>
+          {/* ── RIGHT PANEL ── */}
+          <div style={card}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 28px", color: "#F8FAFC" }}>
+              Prediction Results
+            </h2>
 
+            {/* Top result highlight */}
+            {results.length > 0 && (
+              <div style={{
+                background: "linear-gradient(135deg, rgba(0,212,200,0.12), rgba(0,102,255,0.08))",
+                border: "1px solid rgba(0,212,200,0.25)",
+                borderRadius: 16, padding: "20px 24px", marginBottom: 24,
+              }}>
+                <p style={{ fontSize: 12, color: "#00D4C8", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+                  TOP DIAGNOSIS
+                </p>
+                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#F8FAFC", margin: "0 0 8px" }}>
+                  {results[0].disease}
+                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <span style={{ fontSize: 14, color: "#94A3B8" }}>
+                    Probability: <span style={{ color: "#00D4C8", fontWeight: 700 }}>{results[0].probability}%</span>
+                  </span>
+                  <ConfidenceBadge conf={results[0].confidence} />
+                </div>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {results.length === 0 && !loading && (
+              <div style={{ textAlign: "center", padding: "60px 24px", color: "#334155" }}>
+                <div style={{ fontSize: 64, marginBottom: 20 }}>🧠</div>
+                <p style={{ fontSize: 16, marginBottom: 8, color: "#475569" }}>No predictions yet</p>
+                <p style={{ fontSize: 13, color: "#334155" }}>Enter symptoms on the left and click Predict Disease</p>
+              </div>
+            )}
+
+            {/* Results list */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {results.map((item, i) => (
+                <div key={i} style={{
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 16, padding: "18px 20px",
+                  background: "rgba(255,255,255,0.02)",
+                  transition: "border-color 0.2s",
+                }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(0,212,200,0.2)"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <div>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, color: "#475569",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                        padding: "3px 8px", borderRadius: 6, marginRight: 10,
+                      }}>#{item.rank}</span>
+                      <span style={{ fontWeight: 600, fontSize: 15, color: "#F8FAFC" }}>{item.disease}</span>
+                    </div>
+                    <ConfidenceBadge conf={item.confidence} />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748B", marginBottom: 8 }}>
+                    <span>Probability</span>
+                    <span style={{ color: "#F8FAFC", fontWeight: 600 }}>{item.probability}%</span>
+                  </div>
+
+                  <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 100 }}>
+                    <div style={{
+                      height: 5,
+                      width: `${item.probability}%`,
+                      borderRadius: 100,
+                      background: i === 0
+                        ? "linear-gradient(90deg, #00D4C8, #0066FF)"
+                        : i === 1
+                          ? "linear-gradient(90deg, #22C55E, #00D4C8)"
+                          : "linear-gradient(90deg, #A78BFA, #6366F1)",
+                      transition: "width 0.8s ease",
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

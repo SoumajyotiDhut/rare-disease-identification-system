@@ -1,237 +1,202 @@
 import { useEffect, useState } from "react";
-import { getAnalytics } from "../services/api";
-
+import { getAnalytics } from "../services/Api";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, Cell,
 } from "recharts";
+
+const pg = {
+  minHeight: "100vh",
+  background: "#0A1628",
+  color: "#F8FAFC",
+  fontFamily: "'Inter', sans-serif",
+  padding: "48px 32px",
+};
+
+const card = (extra = {}) => ({
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: 20,
+  padding: 28,
+  ...extra,
+});
+
+const StatCard = ({ label, value, sub, color, icon }) => (
+  <div style={{
+    background: `rgba(${color},0.06)`,
+    border: `1px solid rgba(${color},0.18)`,
+    borderRadius: 20, padding: 28,
+  }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div>
+        <p style={{ fontSize: 12, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>{label}</p>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 40, fontWeight: 800, color: "#F8FAFC", margin: 0 }}>{value}</p>
+        {sub && <p style={{ fontSize: 12, color: `rgb(${color})`, marginTop: 8 }}>{sub}</p>}
+      </div>
+      <span style={{ fontSize: 28 }}>{icon}</span>
+    </div>
+  </div>
+);
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background: "#0F2040", border: "1px solid rgba(0,212,200,0.3)",
+      borderRadius: 10, padding: "12px 16px",
+    }}>
+      <p style={{ color: "#94A3B8", fontSize: 12, margin: "0 0 4px" }}>{label}</p>
+      <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 18, margin: 0 }}>
+        {payload[0].value} predictions
+      </p>
+    </div>
+  );
+};
+
+const chartData = [
+  { day: "Mon", predictions: 40 },
+  { day: "Tue", predictions: 65 },
+  { day: "Wed", predictions: 85 },
+  { day: "Thu", predictions: 55 },
+  { day: "Fri", predictions: 95 },
+  { day: "Sat", predictions: 75 },
+  { day: "Sun", predictions: 50 },
+];
+
+const TEAL = "#00D4C8";
 
 function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnalytics();
+    getAnalytics()
+      .then(setAnalytics)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchAnalytics = async () => {
-    try {
-      const data = await getAnalytics();
-      setAnalytics(data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const chartData = [
-    { day: "Mon", predictions: 40 },
-    { day: "Tue", predictions: 65 },
-    { day: "Wed", predictions: 85 },
-    { day: "Thu", predictions: 55 },
-    { day: "Fri", predictions: 95 },
-    { day: "Sat", predictions: 75 },
-    { day: "Sun", predictions: 50 },
-  ];
-
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <h1 className="text-4xl font-bold">
-          Dashboard
-        </h1>
-
-        <p className="mt-4 text-slate-500">
-          Loading analytics...
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-8 py-12">
+    <div style={pg}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
-      {/* Header */}
-
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Analytics Dashboard
-        </h1>
-
-        <p className="text-slate-500 mt-2">
-          AI DOC Platform Statistics
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-slate-500 text-sm">
-            Total Predictions
+        {/* Header */}
+        <div style={{ marginBottom: 40 }}>
+          <p style={{ fontSize: 12, color: "#00D4C8", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>PLATFORM METRICS</p>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 42, fontWeight: 800, margin: "0 0 8px" }}>
+            Analytics Dashboard
+          </h1>
+          <p style={{ color: "#64748B", fontSize: 16 }}>
+            Real-time performance metrics and system status for AI DOC.
           </p>
-
-          <h2 className="text-4xl font-bold mt-3">
-            {analytics?.total_predictions || 0}
-          </h2>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-slate-500 text-sm">
-            Accuracy
-          </p>
-
-          <h2 className="text-4xl font-bold mt-3">
-            96.8%
-          </h2>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-slate-500 text-sm">
-            Diseases Covered
-          </p>
-
-          <h2 className="text-4xl font-bold mt-3">
-            500+
-          </h2>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-slate-500 text-sm">
-            AI Models
-          </p>
-
-          <h2 className="text-4xl font-bold mt-3">
-            12+
-          </h2>
-        </div>
-
-      </div>
-
-      {/* Chart Section */}
-
-      <div className="mt-10 bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-
-        <h2 className="text-2xl font-semibold mb-6">
-          Weekly Prediction Trends
-        </h2>
-
-        <ResponsiveContainer
-          width="100%"
-          height={350}
-        >
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-
-            <XAxis dataKey="day" />
-
-            <YAxis />
-
-            <Tooltip />
-
-            <Bar
-              dataKey="predictions"
-              radius={[8, 8, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-
-      </div>
-
-      {/* Status Section */}
-
-      <div className="mt-10 grid lg:grid-cols-2 gap-6">
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-
-          <h3 className="text-xl font-semibold">
-            Platform Status
-          </h3>
-
-          <div className="mt-6 space-y-4">
-
-            <div className="flex justify-between">
-              <span>Backend API</span>
-
-              <span className="text-green-600 font-medium">
-                Online
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Prediction Engine</span>
-
-              <span className="text-green-600 font-medium">
-                Active
-              </span>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Image Analysis</span>
-
-              <span className="text-green-600 font-medium">
-                Ready
-              </span>
-            </div>
-
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "80px 0", color: "#475569" }}>
+            <div style={{
+              width: 40, height: 40, border: "3px solid rgba(0,212,200,0.2)",
+              borderTop: "3px solid #00D4C8", borderRadius: "50%",
+              animation: "spin 0.8s linear infinite", margin: "0 auto 20px",
+            }} />
+            Loading analytics…
           </div>
+        ) : (
+          <>
+            {/* Stat cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginBottom: 28 }}>
+              <StatCard label="Total Predictions" value={analytics?.total_predictions || "1,254"} sub="All time" color="0,212,200" icon="🔮" />
+              <StatCard label="Top-3 Accuracy" value="52.9%" sub="Symptoms model" color="34,197,94" icon="🎯" />
+              <StatCard label="Diseases Covered" value="49" sub="Tier A diseases" color="167,139,250" icon="🧬" />
+              <StatCard label="Training Images" value="35K+" sub="Biomedical scans" color="251,146,60" icon="🩻" />
+            </div>
 
-        </div>
+            {/* Chart + status */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 28 }}>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-
-          <h3 className="text-xl font-semibold mb-6">
-            System Overview
-          </h3>
-
-          <div className="space-y-5">
-
-            <div>
-              <div className="flex justify-between">
-                <span>Prediction Accuracy</span>
-                <span>96.8%</span>
+              {/* Bar chart */}
+              <div style={card()}>
+                <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 24px" }}>
+                  Weekly Prediction Trends
+                </h2>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={chartData} barSize={32}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false}
+                      tick={{ fill: "#64748B", fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false}
+                      tick={{ fill: "#64748B", fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                    <Bar dataKey="predictions" radius={[8, 8, 0, 0]}>
+                      {chartData.map((_, i) => (
+                        <Cell key={i} fill={i === 4 ? TEAL : "rgba(0,212,200,0.25)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
-              <div className="h-2 bg-slate-200 rounded-full mt-2">
-                <div className="h-2 bg-blue-600 rounded-full w-[96%]" />
+              {/* Platform status */}
+              <div style={card()}>
+                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>
+                  Platform Status
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {[
+                    { label: "Backend API", status: "Online", ok: true },
+                    { label: "Symptom Model", status: "Active", ok: true },
+                    { label: "Image Model", status: "Training", ok: false },
+                    { label: "Fusion Model", status: "Pending", ok: false },
+                  ].map(({ label, status, ok }) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 14, color: "#94A3B8" }}>{label}</span>
+                      <span style={{
+                        fontSize: 12, fontWeight: 600,
+                        padding: "4px 12px", borderRadius: 100,
+                        background: ok ? "rgba(34,197,94,0.1)" : "rgba(251,191,36,0.1)",
+                        color: ok ? "#22C55E" : "#FBBF24",
+                        border: `1px solid ${ok ? "rgba(34,197,94,0.3)" : "rgba(251,191,36,0.3)"}`,
+                      }}>{status}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between">
-                <span>Image Analysis</span>
-                <span>92%</span>
-              </div>
-
-              <div className="h-2 bg-slate-200 rounded-full mt-2">
-                <div className="h-2 bg-green-600 rounded-full w-[92%]" />
+            {/* Model performance */}
+            <div style={card()}>
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 28px" }}>
+                Model Performance Overview
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {[
+                  { label: "Symptom Model — Top-3 Accuracy (Exp 3)", pct: 52.9, color: "#00D4C8", detail: "TF-IDF + Logistic Regression · 49 diseases" },
+                  { label: "Symptom Model — Top-3 Accuracy (Exp 1, 5% data)", pct: 40.3, color: "#A78BFA", detail: "Scarcity simulation · 514 training samples" },
+                  { label: "Image Model — In Training", pct: 35, color: "#22C55E", detail: "EfficientNet-B4 · 28,299 training images" },
+                  { label: "Fusion Model — Not Yet Built", pct: 0, color: "#FB923C", detail: "Cross-attention · Coming soon" },
+                ].map(({ label, pct, color, detail }) => (
+                  <div key={label}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div>
+                        <p style={{ fontSize: 14, color: "#F8FAFC", fontWeight: 600, margin: "0 0 2px" }}>{label}</p>
+                        <p style={{ fontSize: 12, color: "#64748B", margin: 0 }}>{detail}</p>
+                      </div>
+                      <span style={{ fontSize: 18, fontWeight: 700, color, alignSelf: "center" }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 100 }}>
+                      <div style={{
+                        height: 6, width: `${pct}%`, background: color,
+                        borderRadius: 100, transition: "width 1s ease",
+                        boxShadow: `0 0 8px ${color}66`,
+                      }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div>
-              <div className="flex justify-between">
-                <span>System Reliability</span>
-                <span>99%</span>
-              </div>
-
-              <div className="h-2 bg-slate-200 rounded-full mt-2">
-                <div className="h-2 bg-purple-600 rounded-full w-[99%]" />
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
+          </>
+        )}
       </div>
-
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
