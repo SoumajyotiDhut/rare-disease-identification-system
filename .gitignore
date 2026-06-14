@@ -1,33 +1,32 @@
-# Data files
-data/
+# Run in your project root
+@"
+# Model files — too large for git
+*.pt
+*.pth
+*.onnx
 *.pkl
-*.zip
-*.jpg
-*.jpeg
-*.png
+*.h5
+*.bin
 
-# Keep results JSONs
-!results/experiment_tracker.json
-!results/day1_summary.json
+# Never commit node_modules
+node_modules/
+frontend/node_modules/
 
-# Python
+# Python cache
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
 
-# Models
-*.pth
-*.pt
-*.h5
+# Database
+*.db
 
-# Environment
+# Env
 .env
 venv/
+"@ | Out-File -FilePath ".gitignore" -Encoding utf8
 
-# Node stuff
-node_modules/
+Write-Host "✅ .gitignore created"
+backend/upload_*.py
+backend/*token*
+.env
 
-backend/upload_models.py
-
-*.env
-secrets.json
+backend/upload_*.py
