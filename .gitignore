@@ -30,3 +30,8 @@ backend/*token*
 .env
 
 backend/upload_*.py
+
+# Allow small sklearn models
+!backend/models/tfidf_vectorizer.pkl
+!backend/models/lr_symptoms_model.pkl
+!backend/models/label_encoder_symptoms.pkl
