@@ -1,0 +1,1031 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "gpuType": "T4",
+      "authorship_tag": "ABX9TyM3vzX25LeYXQSe0EBEv2Pw",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "GPU",
+    "widgets": {
+      "application/vnd.jupyter.widget-state+json": {
+        "ec34a672079c4d599ce7494f488249ca": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "HBoxModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_dom_classes": [],
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "HBoxModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/controls",
+            "_view_module_version": "1.5.0",
+            "_view_name": "HBoxView",
+            "box_style": "",
+            "children": [
+              "IPY_MODEL_d52086f25a124be790437952f393d234",
+              "IPY_MODEL_28b8969c0f1b4ab49b089b47a7abb30c",
+              "IPY_MODEL_2d663d6faba34cdd80931d201bd0c620"
+            ],
+            "layout": "IPY_MODEL_a9c2a00bbf3b4a0484c5d362bbbcd005"
+          }
+        },
+        "d52086f25a124be790437952f393d234": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "HTMLModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_dom_classes": [],
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "HTMLModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/controls",
+            "_view_module_version": "1.5.0",
+            "_view_name": "HTMLView",
+            "description": "",
+            "description_tooltip": null,
+            "layout": "IPY_MODEL_03acc2d45fc24106b83cff7a1817c973",
+            "placeholder": "​",
+            "style": "IPY_MODEL_351ec567e5b64ec39c4b78ef847a351a",
+            "value": "model.safetensors: 100%"
+          }
+        },
+        "28b8969c0f1b4ab49b089b47a7abb30c": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "FloatProgressModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_dom_classes": [],
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "FloatProgressModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/controls",
+            "_view_module_version": "1.5.0",
+            "_view_name": "ProgressView",
+            "bar_style": "success",
+            "description": "",
+            "description_tooltip": null,
+            "layout": "IPY_MODEL_6ed8a9cfc7654a95a4f021539ac20b4c",
+            "max": 77933206,
+            "min": 0,
+            "orientation": "horizontal",
+            "style": "IPY_MODEL_d5709cd132d8420f8da23b2e37972d3b",
+            "value": 77933206
+          }
+        },
+        "2d663d6faba34cdd80931d201bd0c620": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "HTMLModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_dom_classes": [],
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "HTMLModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/controls",
+            "_view_module_version": "1.5.0",
+            "_view_name": "HTMLView",
+            "description": "",
+            "description_tooltip": null,
+            "layout": "IPY_MODEL_cf7cf78eedff408dafcb2604ed87eb31",
+            "placeholder": "​",
+            "style": "IPY_MODEL_ecaa9f58b92a4a019a1ed86e92a51388",
+            "value": " 77.9M/77.9M [00:04&lt;00:00, 28.6MB/s]"
+          }
+        },
+        "a9c2a00bbf3b4a0484c5d362bbbcd005": {
+          "model_module": "@jupyter-widgets/base",
+          "model_name": "LayoutModel",
+          "model_module_version": "1.2.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/base",
+            "_model_module_version": "1.2.0",
+            "_model_name": "LayoutModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "LayoutView",
+            "align_content": null,
+            "align_items": null,
+            "align_self": null,
+            "border": null,
+            "bottom": null,
+            "display": null,
+            "flex": null,
+            "flex_flow": null,
+            "grid_area": null,
+            "grid_auto_columns": null,
+            "grid_auto_flow": null,
+            "grid_auto_rows": null,
+            "grid_column": null,
+            "grid_gap": null,
+            "grid_row": null,
+            "grid_template_areas": null,
+            "grid_template_columns": null,
+            "grid_template_rows": null,
+            "height": null,
+            "justify_content": null,
+            "justify_items": null,
+            "left": null,
+            "margin": null,
+            "max_height": null,
+            "max_width": null,
+            "min_height": null,
+            "min_width": null,
+            "object_fit": null,
+            "object_position": null,
+            "order": null,
+            "overflow": null,
+            "overflow_x": null,
+            "overflow_y": null,
+            "padding": null,
+            "right": null,
+            "top": null,
+            "visibility": null,
+            "width": null
+          }
+        },
+        "03acc2d45fc24106b83cff7a1817c973": {
+          "model_module": "@jupyter-widgets/base",
+          "model_name": "LayoutModel",
+          "model_module_version": "1.2.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/base",
+            "_model_module_version": "1.2.0",
+            "_model_name": "LayoutModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "LayoutView",
+            "align_content": null,
+            "align_items": null,
+            "align_self": null,
+            "border": null,
+            "bottom": null,
+            "display": null,
+            "flex": null,
+            "flex_flow": null,
+            "grid_area": null,
+            "grid_auto_columns": null,
+            "grid_auto_flow": null,
+            "grid_auto_rows": null,
+            "grid_column": null,
+            "grid_gap": null,
+            "grid_row": null,
+            "grid_template_areas": null,
+            "grid_template_columns": null,
+            "grid_template_rows": null,
+            "height": null,
+            "justify_content": null,
+            "justify_items": null,
+            "left": null,
+            "margin": null,
+            "max_height": null,
+            "max_width": null,
+            "min_height": null,
+            "min_width": null,
+            "object_fit": null,
+            "object_position": null,
+            "order": null,
+            "overflow": null,
+            "overflow_x": null,
+            "overflow_y": null,
+            "padding": null,
+            "right": null,
+            "top": null,
+            "visibility": null,
+            "width": null
+          }
+        },
+        "351ec567e5b64ec39c4b78ef847a351a": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "DescriptionStyleModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "DescriptionStyleModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "StyleView",
+            "description_width": ""
+          }
+        },
+        "6ed8a9cfc7654a95a4f021539ac20b4c": {
+          "model_module": "@jupyter-widgets/base",
+          "model_name": "LayoutModel",
+          "model_module_version": "1.2.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/base",
+            "_model_module_version": "1.2.0",
+            "_model_name": "LayoutModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "LayoutView",
+            "align_content": null,
+            "align_items": null,
+            "align_self": null,
+            "border": null,
+            "bottom": null,
+            "display": null,
+            "flex": null,
+            "flex_flow": null,
+            "grid_area": null,
+            "grid_auto_columns": null,
+            "grid_auto_flow": null,
+            "grid_auto_rows": null,
+            "grid_column": null,
+            "grid_gap": null,
+            "grid_row": null,
+            "grid_template_areas": null,
+            "grid_template_columns": null,
+            "grid_template_rows": null,
+            "height": null,
+            "justify_content": null,
+            "justify_items": null,
+            "left": null,
+            "margin": null,
+            "max_height": null,
+            "max_width": null,
+            "min_height": null,
+            "min_width": null,
+            "object_fit": null,
+            "object_position": null,
+            "order": null,
+            "overflow": null,
+            "overflow_x": null,
+            "overflow_y": null,
+            "padding": null,
+            "right": null,
+            "top": null,
+            "visibility": null,
+            "width": null
+          }
+        },
+        "d5709cd132d8420f8da23b2e37972d3b": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "ProgressStyleModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "ProgressStyleModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "StyleView",
+            "bar_color": null,
+            "description_width": ""
+          }
+        },
+        "cf7cf78eedff408dafcb2604ed87eb31": {
+          "model_module": "@jupyter-widgets/base",
+          "model_name": "LayoutModel",
+          "model_module_version": "1.2.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/base",
+            "_model_module_version": "1.2.0",
+            "_model_name": "LayoutModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "LayoutView",
+            "align_content": null,
+            "align_items": null,
+            "align_self": null,
+            "border": null,
+            "bottom": null,
+            "display": null,
+            "flex": null,
+            "flex_flow": null,
+            "grid_area": null,
+            "grid_auto_columns": null,
+            "grid_auto_flow": null,
+            "grid_auto_rows": null,
+            "grid_column": null,
+            "grid_gap": null,
+            "grid_row": null,
+            "grid_template_areas": null,
+            "grid_template_columns": null,
+            "grid_template_rows": null,
+            "height": null,
+            "justify_content": null,
+            "justify_items": null,
+            "left": null,
+            "margin": null,
+            "max_height": null,
+            "max_width": null,
+            "min_height": null,
+            "min_width": null,
+            "object_fit": null,
+            "object_position": null,
+            "order": null,
+            "overflow": null,
+            "overflow_x": null,
+            "overflow_y": null,
+            "padding": null,
+            "right": null,
+            "top": null,
+            "visibility": null,
+            "width": null
+          }
+        },
+        "ecaa9f58b92a4a019a1ed86e92a51388": {
+          "model_module": "@jupyter-widgets/controls",
+          "model_name": "DescriptionStyleModel",
+          "model_module_version": "1.5.0",
+          "state": {
+            "_model_module": "@jupyter-widgets/controls",
+            "_model_module_version": "1.5.0",
+            "_model_name": "DescriptionStyleModel",
+            "_view_count": null,
+            "_view_module": "@jupyter-widgets/base",
+            "_view_module_version": "1.2.0",
+            "_view_name": "StyleView",
+            "description_width": ""
+          }
+        }
+      }
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/SoumajyotiDhut/rare-disease-identification-system/blob/main/notebooks/colab\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Mount Drive + Set Up"
+      ],
+      "metadata": {
+        "id": "d5RUF6PSuJa7"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "MiZ2ZoO1t94h",
+        "outputId": "fde0e01a-afa0-4d4f-b8ab-c12279efada0"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n",
+            "Device : cuda\n",
+            "GPU    : Tesla T4\n",
+            "Tier A diseases : 62\n"
+          ]
+        }
+      ],
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')\n",
+        "\n",
+        "BASE        = '/content/drive/MyDrive/rare_disease_project/data'\n",
+        "images_base = f'{BASE}/zebramap/images'\n",
+        "\n",
+        "import os, pickle, numpy as np, pandas as pd, json\n",
+        "import torch\n",
+        "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n",
+        "print(f\"Device : {device}\")\n",
+        "print(f\"GPU    : {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None'}\")\n",
+        "\n",
+        "with open(f'{BASE}/config.pkl', 'rb') as f:\n",
+        "    config = pickle.load(f)\n",
+        "\n",
+        "tier_a = [str(t) for t in config['tier_a']]\n",
+        "print(f\"Tier A diseases : {len(tier_a)}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Build Image DataFrame"
+      ],
+      "metadata": {
+        "id": "1RzTQFAGugpw"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.preprocessing import LabelEncoder\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "import random, json\n",
+        "\n",
+        "# ── Sample max 50 images per disease directly from Drive ──\n",
+        "print(\"Building dataset (50 images per disease max)...\")\n",
+        "\n",
+        "random.seed(42)\n",
+        "records = []\n",
+        "\n",
+        "for disease in tier_a:\n",
+        "    disease_path = os.path.join(images_base, disease)\n",
+        "    if not os.path.exists(disease_path):\n",
+        "        continue\n",
+        "\n",
+        "    imgs = []\n",
+        "    for root, dirs, files in os.walk(disease_path):\n",
+        "        for fname in files:\n",
+        "            if fname.lower().endswith(('.jpg','.png','.jpeg')):\n",
+        "                imgs.append({\n",
+        "                    'image_path': os.path.join(root, fname),\n",
+        "                    'orpha_code': disease,\n",
+        "                })\n",
+        "\n",
+        "    # Max 50 per disease\n",
+        "    sampled = random.sample(imgs, min(50, len(imgs)))\n",
+        "    records.extend(sampled)\n",
+        "\n",
+        "img_df = pd.DataFrame(records)\n",
+        "print(f\"Total images   : {len(img_df):,}\")\n",
+        "print(f\"Unique diseases: {img_df['orpha_code'].nunique()}\")\n",
+        "print(f\"Avg per disease: {len(img_df)/img_df['orpha_code'].nunique():.0f}\")\n",
+        "\n",
+        "# Disease names\n",
+        "with open(f'{BASE}/zebramap/structured_cases.json', 'r') as f:\n",
+        "    cases = json.load(f)\n",
+        "\n",
+        "disease_names = {}\n",
+        "for orpha, case_dict in cases.items():\n",
+        "    for case_id, case_data in case_dict.items():\n",
+        "        name = case_data['CaseData']['ActualDiagnosis'].get(\n",
+        "            'DiseaseName', '')\n",
+        "        if name:\n",
+        "            disease_names[str(orpha)] = name\n",
+        "            break\n",
+        "\n",
+        "img_df['disease_name'] = img_df['orpha_code'].map(\n",
+        "    disease_names).fillna('Unknown')\n",
+        "\n",
+        "# Label encode\n",
+        "le_img = LabelEncoder()\n",
+        "le_img.fit(img_df['orpha_code'])\n",
+        "img_df['label'] = le_img.transform(img_df['orpha_code'])\n",
+        "NUM_CLASSES     = len(le_img.classes_)\n",
+        "\n",
+        "# Stratified split\n",
+        "train_df, test_df = train_test_split(\n",
+        "    img_df,\n",
+        "    test_size    = 0.2,\n",
+        "    random_state = 42,\n",
+        "    stratify     = img_df['orpha_code']\n",
+        ")\n",
+        "\n",
+        "print(f\"\\nNum classes  : {NUM_CLASSES}\")\n",
+        "print(f\"Train images : {len(train_df):,}\")\n",
+        "print(f\"Test images  : {len(test_df):,}\")\n",
+        "\n",
+        "with open(f'{BASE}/label_encoder_image.pkl', 'wb') as f:\n",
+        "    pickle.dump(le_img, f)\n",
+        "print(\"✅ Label encoder saved\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YMeOjj0v2i1y",
+        "outputId": "1273e0bb-6363-4aab-9cd2-8be4ce8bb580"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Building dataset (50 images per disease max)...\n",
+            "Total images   : 3,100\n",
+            "Unique diseases: 62\n",
+            "Avg per disease: 50\n",
+            "\n",
+            "Num classes  : 62\n",
+            "Train images : 2,480\n",
+            "Test images  : 620\n",
+            "✅ Label encoder saved\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Dataset + Transforms"
+      ],
+      "metadata": {
+        "id": "Pqiq8ce7unbK"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import torch\n",
+        "from torch.utils.data import Dataset, DataLoader\n",
+        "from torchvision import transforms\n",
+        "from PIL import Image\n",
+        "\n",
+        "train_transforms = transforms.Compose([\n",
+        "    transforms.Resize((224, 224)),\n",
+        "    transforms.RandomHorizontalFlip(p=0.5),\n",
+        "    transforms.RandomVerticalFlip(p=0.3),\n",
+        "    transforms.RandomRotation(degrees=15),\n",
+        "    transforms.ColorJitter(brightness=0.2, contrast=0.2,\n",
+        "                           saturation=0.1, hue=0.1),\n",
+        "    transforms.ToTensor(),\n",
+        "    transforms.Normalize(mean=[0.485, 0.456, 0.406],\n",
+        "                         std =[0.229, 0.224, 0.225])\n",
+        "])\n",
+        "\n",
+        "test_transforms = transforms.Compose([\n",
+        "    transforms.Resize((224, 224)),\n",
+        "    transforms.ToTensor(),\n",
+        "    transforms.Normalize(mean=[0.485, 0.456, 0.406],\n",
+        "                         std =[0.229, 0.224, 0.225])\n",
+        "])\n",
+        "\n",
+        "class ImageDataset(Dataset):\n",
+        "    def __init__(self, df, transform=None):\n",
+        "        self.df        = df.reset_index(drop=True)\n",
+        "        self.transform = transform\n",
+        "\n",
+        "    def __len__(self):\n",
+        "        return len(self.df)\n",
+        "\n",
+        "    def __getitem__(self, idx):\n",
+        "        row   = self.df.iloc[idx]\n",
+        "        label = int(row['label'])\n",
+        "        try:\n",
+        "            img = Image.open(row['image_path']).convert('RGB')\n",
+        "            if self.transform:\n",
+        "                img = self.transform(img)\n",
+        "        except:\n",
+        "            img = torch.zeros(3, 224, 224)\n",
+        "        return img, label\n",
+        "\n",
+        "# Test\n",
+        "sample = ImageDataset(train_df.head(4), train_transforms)\n",
+        "img, lbl = sample[0]\n",
+        "print(f\"✅ Dataset working\")\n",
+        "print(f\"   Shape : {img.shape}\")\n",
+        "print(f\"   Label : {lbl}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5YrFgyu9uu3F",
+        "outputId": "e3fdce95-208b-4848-e95c-3571e2663a94"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ Dataset working\n",
+            "   Shape : torch.Size([3, 224, 224])\n",
+            "   Label : 39\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# EfficientNet-B4 Model"
+      ],
+      "metadata": {
+        "id": "dpUOyJ-Xu0rs"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import torch.nn as nn\n",
+        "import timm\n",
+        "\n",
+        "class ImageClassifier(nn.Module):\n",
+        "    def __init__(self, num_classes, dropout=0.3):\n",
+        "        super().__init__()\n",
+        "        self.backbone = timm.create_model(\n",
+        "            'efficientnet_b4',\n",
+        "            pretrained  = True,\n",
+        "            num_classes = 0,\n",
+        "            global_pool = 'avg'\n",
+        "        )\n",
+        "        feat_dim = self.backbone.num_features  # 1792\n",
+        "        self.classifier = nn.Sequential(\n",
+        "            nn.Dropout(dropout),\n",
+        "            nn.Linear(feat_dim, 512),\n",
+        "            nn.ReLU(),\n",
+        "            nn.Dropout(0.2),\n",
+        "            nn.Linear(512, 256),\n",
+        "            nn.ReLU(),\n",
+        "            nn.Dropout(0.1),\n",
+        "            nn.Linear(256, num_classes)\n",
+        "        )\n",
+        "\n",
+        "    def forward(self, x):\n",
+        "        return self.classifier(self.backbone(x))\n",
+        "\n",
+        "model   = ImageClassifier(NUM_CLASSES).to(device)\n",
+        "dummy   = torch.randn(2, 3, 224, 224).to(device)\n",
+        "out     = model(dummy)\n",
+        "print(f\"✅ Model ready\")\n",
+        "print(f\"   Output shape : {out.shape}\")\n",
+        "print(f\"   Parameters   : {sum(p.numel() for p in model.parameters()):,}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 101,
+          "referenced_widgets": [
+            "ec34a672079c4d599ce7494f488249ca",
+            "d52086f25a124be790437952f393d234",
+            "28b8969c0f1b4ab49b089b47a7abb30c",
+            "2d663d6faba34cdd80931d201bd0c620",
+            "a9c2a00bbf3b4a0484c5d362bbbcd005",
+            "03acc2d45fc24106b83cff7a1817c973",
+            "351ec567e5b64ec39c4b78ef847a351a",
+            "6ed8a9cfc7654a95a4f021539ac20b4c",
+            "d5709cd132d8420f8da23b2e37972d3b",
+            "cf7cf78eedff408dafcb2604ed87eb31",
+            "ecaa9f58b92a4a019a1ed86e92a51388"
+          ]
+        },
+        "id": "b0gvLlfRu2So",
+        "outputId": "f96a4e7a-7413-438f-dcee-7e95d97eae54"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "model.safetensors:   0%|          | 0.00/77.9M [00:00<?, ?B/s]"
+            ],
+            "application/vnd.jupyter.widget-view+json": {
+              "version_major": 2,
+              "version_minor": 0,
+              "model_id": "ec34a672079c4d599ce7494f488249ca"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ Model ready\n",
+            "   Output shape : torch.Size([2, 62])\n",
+            "   Parameters   : 18,613,894\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Training Functions"
+      ],
+      "metadata": {
+        "id": "0FCN054Vu6mJ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.metrics import f1_score, accuracy_score\n",
+        "from sklearn.utils.class_weight import compute_class_weight\n",
+        "\n",
+        "def train_epoch(model, loader, optimizer, criterion, device):\n",
+        "    model.train()\n",
+        "    total_loss, correct, total = 0, 0, 0\n",
+        "    for imgs, labels in loader:\n",
+        "        imgs, labels = imgs.to(device), labels.to(device)\n",
+        "        optimizer.zero_grad()\n",
+        "        outputs = model(imgs)\n",
+        "        loss    = criterion(outputs, labels)\n",
+        "        loss.backward()\n",
+        "        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)\n",
+        "        optimizer.step()\n",
+        "        total_loss += loss.item()\n",
+        "        correct    += (outputs.argmax(1)==labels).sum().item()\n",
+        "        total      += labels.size(0)\n",
+        "    return total_loss/len(loader), correct/total\n",
+        "\n",
+        "def eval_epoch(model, loader, criterion, device):\n",
+        "    model.eval()\n",
+        "    total_loss = 0\n",
+        "    all_preds, all_labels, all_probs = [], [], []\n",
+        "    with torch.no_grad():\n",
+        "        for imgs, labels in loader:\n",
+        "            imgs, labels = imgs.to(device), labels.to(device)\n",
+        "            outputs      = model(imgs)\n",
+        "            loss         = criterion(outputs, labels)\n",
+        "            total_loss  += loss.item()\n",
+        "            probs        = torch.softmax(outputs, dim=1)\n",
+        "            preds        = outputs.argmax(dim=1)\n",
+        "            all_preds.extend(preds.cpu().numpy())\n",
+        "            all_labels.extend(labels.cpu().numpy())\n",
+        "            all_probs.extend(probs.cpu().numpy())\n",
+        "\n",
+        "    acc      = accuracy_score(all_labels, all_preds)\n",
+        "    f1       = f1_score(all_labels, all_preds,\n",
+        "                        average='macro', zero_division=0)\n",
+        "    probs_np = np.array(all_probs)\n",
+        "    top3     = sum(\n",
+        "        all_labels[i] in np.argsort(probs_np[i])[-3:]\n",
+        "        for i in range(len(all_labels))\n",
+        "    ) / len(all_labels)\n",
+        "\n",
+        "    return total_loss/len(loader), acc, f1, top3, \\\n",
+        "           all_labels, all_preds, all_probs\n",
+        "\n",
+        "print(\"✅ Training functions ready\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "OBxNsQTKu8iX",
+        "outputId": "7f2d50b0-2bb2-4f22-f498-7111b50e2179"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ Training functions ready\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#  Train (The Main Cell)"
+      ],
+      "metadata": {
+        "id": "pcSe1H3ovJs1"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from torch.optim import AdamW\n",
+        "from torch.optim.lr_scheduler import CosineAnnealingLR\n",
+        "\n",
+        "BATCH_SIZE = 32\n",
+        "EPOCHS     = 15\n",
+        "best_f1    = 0\n",
+        "best_path  = f'{BASE}/image_model_best.pt'\n",
+        "\n",
+        "# DataLoaders — reading from LOCAL SSD (fast)\n",
+        "train_dataset = ImageDataset(train_df, train_transforms)\n",
+        "test_dataset  = ImageDataset(test_df,  test_transforms)\n",
+        "train_loader  = DataLoader(train_dataset, batch_size=BATCH_SIZE,\n",
+        "                           shuffle=True,  num_workers=2,\n",
+        "                           pin_memory=True)\n",
+        "test_loader   = DataLoader(test_dataset,  batch_size=BATCH_SIZE,\n",
+        "                           shuffle=False, num_workers=2,\n",
+        "                           pin_memory=True)\n",
+        "\n",
+        "# Class weights\n",
+        "class_weights = compute_class_weight(\n",
+        "    'balanced',\n",
+        "    classes = np.unique(train_df['label'].values),\n",
+        "    y       = train_df['label'].values\n",
+        ")\n",
+        "criterion = nn.CrossEntropyLoss(\n",
+        "    weight=torch.FloatTensor(class_weights).to(device))\n",
+        "\n",
+        "# Fresh model + optimizer\n",
+        "model     = ImageClassifier(NUM_CLASSES).to(device)\n",
+        "optimizer = AdamW([\n",
+        "    {'params': model.backbone.parameters(),   'lr': 1e-4},\n",
+        "    {'params': model.classifier.parameters(), 'lr': 1e-3}\n",
+        "], weight_decay=0.01)\n",
+        "scheduler = CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-6)\n",
+        "\n",
+        "print(f\"Train : {len(train_dataset):,} | Test : {len(test_dataset):,}\")\n",
+        "print(f\"Classes: {NUM_CLASSES} | Batch: {BATCH_SIZE} | Epochs: {EPOCHS}\")\n",
+        "print(f\"Batches/epoch: {len(train_loader)}\")\n",
+        "print(\"=\" * 65)\n",
+        "\n",
+        "for epoch in range(1, EPOCHS + 1):\n",
+        "    tr_loss, tr_acc = train_epoch(\n",
+        "        model, train_loader, optimizer, criterion, device)\n",
+        "    scheduler.step()\n",
+        "    vl_loss, vl_acc, vl_f1, vl_top3, \\\n",
+        "        labs, preds, probs = eval_epoch(\n",
+        "        model, test_loader, criterion, device)\n",
+        "\n",
+        "    flag = ''\n",
+        "    if vl_f1 > best_f1:\n",
+        "        best_f1 = vl_f1\n",
+        "        torch.save({\n",
+        "            'epoch'        : epoch,\n",
+        "            'model_state'  : model.state_dict(),\n",
+        "            'val_f1'       : vl_f1,\n",
+        "            'val_acc'      : vl_acc,\n",
+        "            'val_top3'     : vl_top3,\n",
+        "            'num_classes'  : NUM_CLASSES,\n",
+        "            'label_encoder': le_img,\n",
+        "        }, best_path)\n",
+        "        flag = ' ✅ saved'\n",
+        "\n",
+        "    print(f\"Ep {epoch:02d}/{EPOCHS} | \"\n",
+        "          f\"Tr Loss:{tr_loss:.3f} Acc:{tr_acc:.3f} | \"\n",
+        "          f\"Val Loss:{vl_loss:.3f} Acc:{vl_acc:.3f} \"\n",
+        "          f\"F1:{vl_f1:.3f} Top3:{vl_top3:.3f}{flag}\")\n",
+        "\n",
+        "print(f\"\\n🎉 Training complete — Best F1: {best_f1:.4f}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "GoDFqehPvLwt",
+        "outputId": "9bf42cf2-3ea3-4882-c5e2-80d7cea48721"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Train : 2,480 | Test : 620\n",
+            "Classes: 62 | Batch: 32 | Epochs: 15\n",
+            "Batches/epoch: 78\n",
+            "=================================================================\n",
+            "Ep 01/15 | Tr Loss:4.120 Acc:0.022 | Val Loss:4.053 Acc:0.037 F1:0.014 Top3:0.124 ✅ saved\n",
+            "Ep 02/15 | Tr Loss:3.904 Acc:0.067 | Val Loss:3.847 Acc:0.087 F1:0.053 Top3:0.198 ✅ saved\n",
+            "Ep 03/15 | Tr Loss:3.640 Acc:0.104 | Val Loss:3.791 Acc:0.081 F1:0.060 Top3:0.210 ✅ saved\n",
+            "Ep 04/15 | Tr Loss:3.425 Acc:0.145 | Val Loss:3.795 Acc:0.100 F1:0.070 Top3:0.232 ✅ saved\n",
+            "Ep 05/15 | Tr Loss:3.203 Acc:0.188 | Val Loss:3.822 Acc:0.076 F1:0.064 Top3:0.226\n",
+            "Ep 06/15 | Tr Loss:3.028 Acc:0.222 | Val Loss:3.875 Acc:0.084 F1:0.066 Top3:0.226\n",
+            "Ep 07/15 | Tr Loss:2.856 Acc:0.256 | Val Loss:3.912 Acc:0.095 F1:0.081 Top3:0.239 ✅ saved\n",
+            "Ep 08/15 | Tr Loss:2.657 Acc:0.303 | Val Loss:3.961 Acc:0.113 F1:0.096 Top3:0.247 ✅ saved\n",
+            "Ep 09/15 | Tr Loss:2.516 Acc:0.332 | Val Loss:4.049 Acc:0.116 F1:0.098 Top3:0.226 ✅ saved\n",
+            "Ep 10/15 | Tr Loss:2.366 Acc:0.383 | Val Loss:4.061 Acc:0.106 F1:0.093 Top3:0.239\n",
+            "Ep 11/15 | Tr Loss:2.271 Acc:0.406 | Val Loss:4.151 Acc:0.113 F1:0.103 Top3:0.240 ✅ saved\n",
+            "Ep 12/15 | Tr Loss:2.153 Acc:0.429 | Val Loss:4.173 Acc:0.108 F1:0.100 Top3:0.235\n",
+            "Ep 13/15 | Tr Loss:2.100 Acc:0.437 | Val Loss:4.182 Acc:0.115 F1:0.104 Top3:0.229 ✅ saved\n",
+            "Ep 14/15 | Tr Loss:2.083 Acc:0.426 | Val Loss:4.188 Acc:0.118 F1:0.107 Top3:0.239 ✅ saved\n",
+            "Ep 15/15 | Tr Loss:2.022 Acc:0.459 | Val Loss:4.194 Acc:0.121 F1:0.110 Top3:0.250 ✅ saved\n",
+            "\n",
+            "🎉 Training complete — Best F1: 0.1098\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Final Evaluation + Save Results"
+      ],
+      "metadata": {
+        "id": "nm4V9UFzvXqQ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.metrics import matthews_corrcoef\n",
+        "import pickle\n",
+        "\n",
+        "checkpoint = torch.load(\n",
+        "    best_path,\n",
+        "    map_location=device,\n",
+        "    weights_only=False\n",
+        ")\n",
+        "model.load_state_dict(checkpoint['model_state'])\n",
+        "\n",
+        "_, acc, f1, top3, labels, preds, probs = eval_epoch(\n",
+        "    model, test_loader, criterion, device)\n",
+        "\n",
+        "probs_np = np.array(probs)\n",
+        "top5     = sum(\n",
+        "    labels[i] in np.argsort(probs_np[i])[-5:]\n",
+        "    for i in range(len(labels))\n",
+        ") / len(labels)\n",
+        "mcc = matthews_corrcoef(labels, preds)\n",
+        "\n",
+        "print(\"=\" * 55)\n",
+        "print(\"IMAGE MODEL — EXPERIMENT 3 RESULTS\")\n",
+        "print(\"=\" * 55)\n",
+        "print(f\"Accuracy   : {acc:.4f}  ({acc*100:.2f}%)\")\n",
+        "print(f\"Macro F1   : {f1:.4f}\")\n",
+        "print(f\"Top-3 Acc  : {top3:.4f}  ({top3*100:.2f}%)\")\n",
+        "print(f\"Top-5 Acc  : {top5:.4f}  ({top5*100:.2f}%)\")\n",
+        "print(f\"MCC        : {mcc:.4f}\")\n",
+        "print(f\"Classes    : {NUM_CLASSES}\")\n",
+        "print(f\"Test images: {len(labels):,}\")\n",
+        "print(\"=\" * 55)\n",
+        "\n",
+        "# Save results\n",
+        "results = {\n",
+        "    'experiment'      : 'exp3_image_tier_a_50perclass',\n",
+        "    'accuracy'        : acc,\n",
+        "    'macro_f1'        : f1,\n",
+        "    'top3_acc'        : top3,\n",
+        "    'top5_acc'        : top5,\n",
+        "    'mcc'             : mcc,\n",
+        "    'num_classes'     : NUM_CLASSES,\n",
+        "    'test_samples'    : len(labels),\n",
+        "    'train_samples'   : len(train_df),\n",
+        "    'images_per_class': 50,\n",
+        "}\n",
+        "with open(f'{BASE}/exp3_image_results.pkl', 'wb') as f:\n",
+        "    pickle.dump(results, f)\n",
+        "\n",
+        "print(\"✅ Results saved to Drive\")\n",
+        "print(f\"✅ Model saved: {best_path}\")\n",
+        "\n",
+        "# Compare with symptoms model\n",
+        "print(\"\\n📊 COMPARISON SO FAR\")\n",
+        "print(\"=\" * 55)\n",
+        "print(f\"{'Model':25} {'Acc':8} {'F1':8} {'Top-3':8}\")\n",
+        "print(\"-\" * 55)\n",
+        "print(f\"{'Symptoms (Exp3)':25} {'34.73%':8} {'0.3463':8} {'54.76%':8}\")\n",
+        "print(f\"{'Image (Exp3)':25} {f'{acc*100:.2f}%':8} {f'{f1:.4f}':8} {f'{top3*100:.2f}%':8}\")\n",
+        "print(\"=\" * 55)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5q5JnwHEB2lf",
+        "outputId": "390d60ce-1c2f-4dc5-d641-e571bd67532f"
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "=======================================================\n",
+            "IMAGE MODEL — EXPERIMENT 3 RESULTS\n",
+            "=======================================================\n",
+            "Accuracy   : 0.1210  (12.10%)\n",
+            "Macro F1   : 0.1098\n",
+            "Top-3 Acc  : 0.2500  (25.00%)\n",
+            "Top-5 Acc  : 0.3210  (32.10%)\n",
+            "MCC        : 0.1068\n",
+            "Classes    : 62\n",
+            "Test images: 620\n",
+            "=======================================================\n",
+            "✅ Results saved to Drive\n",
+            "✅ Model saved: /content/drive/MyDrive/rare_disease_project/data/image_model_best.pt\n",
+            "\n",
+            "📊 COMPARISON SO FAR\n",
+            "=======================================================\n",
+            "Model                     Acc      F1       Top-3   \n",
+            "-------------------------------------------------------\n",
+            "Symptoms (Exp3)           34.73%   0.3463   54.76%  \n",
+            "Image (Exp3)              12.10%   0.1098   25.00%  \n",
+            "=======================================================\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "dQPFn5JVB3Z5"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
