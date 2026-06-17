@@ -1,4 +1,4 @@
-const BASE_URL = "https://soumadhut-rare-disease-api.hf.space";
+const BASE_URL = "https://rare-disease-identification-system.onrender.com";
 
 export const predictDisease = async (symptoms, image, top_k = 5) => {
   const formData = new FormData();
