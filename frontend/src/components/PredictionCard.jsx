@@ -1,58 +1,70 @@
-const colors = ["#00D4C8", "#22C55E", "#A78BFA", "#FB923C", "#F472B6"];
+const PALETTE = [
+  { bar: "#0B7B6F", badge: "#EBF8F6", badgeText: "#0B7B6F", border: "#B2E8E2" },
+  { bar: "#1D6FA4", badge: "#EBF4F9", badgeText: "#1D6FA4", border: "#B3D8EE" },
+  { bar: "#5B3DB8", badge: "#F2EEF9", badgeText: "#5B3DB8", border: "#C8B8EC" },
+  { bar: "#C05B1A", badge: "#FFF4EC", badgeText: "#C05B1A", border: "#F5D8B8" },
+  { bar: "#8FA5B5", badge: "#F0F5F8", badgeText: "#5A7184", border: "#C8D8E4" },
+];
 
 const PredictionCard = ({ item }) => {
-  const color = colors[(item.rank - 1) % colors.length];
+  const c = PALETTE[(item.rank - 1) % PALETTE.length];
 
   return (
-    <div style={{
-      background: "rgba(255,255,255,0.03)",
-      border: `1px solid ${color}22`,
-      borderRadius: 16,
-      padding: "20px 24px",
-      transition: "border-color 0.2s, transform 0.2s",
-    }}
+    <div
+      style={{
+        background: "#fff",
+        border: `1px solid ${c.border}`,
+        borderRadius: 16,
+        padding: "20px 24px",
+        transition: "box-shadow 0.2s, transform 0.15s",
+        cursor: "default",
+      }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = `${color}55`;
+        e.currentTarget.style.boxShadow = "0 6px 24px rgba(15,28,46,0.08)";
         e.currentTarget.style.transform = "translateY(-2px)";
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.borderColor = `${color}22`;
+        e.currentTarget.style.boxShadow = "none";
         e.currentTarget.style.transform = "none";
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
         <span style={{
-          width: 28, height: 28, borderRadius: 8,
-          background: `${color}22`,
-          border: `1px solid ${color}44`,
+          width: 30, height: 30, borderRadius: 8,
+          background: c.badge,
+          border: `1px solid ${c.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 12, fontWeight: 700, color,
+          fontSize: 11, fontWeight: 800, color: c.badgeText,
+          flexShrink: 0,
         }}>#{item.rank}</span>
         <h2 style={{
-          fontFamily: "'Syne', sans-serif",
-          fontSize: 16, fontWeight: 700,
-          color: "#F8FAFC", margin: 0,
+          fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+          fontSize: 15, fontWeight: 700,
+          color: "#0F1C2E", margin: 0,
         }}>{item.disease}</h2>
       </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748B", marginBottom: 6 }}>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#8FA5B5", marginBottom: 7, fontWeight: 500 }}>
           <span>Probability</span>
-          <span style={{ color, fontWeight: 700 }}>{item.probability}%</span>
+          <span style={{ color: c.badgeText, fontWeight: 700 }}>{item.probability}%</span>
         </div>
-        <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 100 }}>
+        <div style={{ height: 5, background: "#F0F5F8", borderRadius: 100 }}>
           <div style={{
-            height: 4, width: `${item.probability}%`,
-            background: color, borderRadius: 100,
+            height: 5, width: `${item.probability}%`,
+            background: c.bar, borderRadius: 100,
+            transition: "width 0.8s ease",
           }} />
         </div>
       </div>
 
       <span style={{
-        fontSize: 11, fontWeight: 600,
-        padding: "3px 10px", borderRadius: 100,
-        background: `${color}15`,
-        color, border: `1px solid ${color}33`,
+        fontSize: 11, fontWeight: 700,
+        padding: "4px 12px", borderRadius: 100,
+        background: c.badge,
+        color: c.badgeText,
+        border: `1px solid ${c.border}`,
+        textTransform: "uppercase", letterSpacing: 0.6,
       }}>
         {item.confidence}
       </span>
