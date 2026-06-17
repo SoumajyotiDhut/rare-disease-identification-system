@@ -7,33 +7,34 @@ import {
 
 const pg = {
   minHeight: "100vh",
-  background: "#0A1628",
-  color: "#F8FAFC",
+  background: "#F8FAFB",
+  color: "#0F1C2E",
   fontFamily: "'Inter', sans-serif",
-  padding: "48px 32px",
+  padding: "56px 40px",
 };
 
 const card = (extra = {}) => ({
-  background: "rgba(255,255,255,0.03)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "#fff",
+  border: "1px solid #E8EFF5",
   borderRadius: 20,
   padding: 28,
   ...extra,
 });
 
-const StatCard = ({ label, value, sub, color, icon }) => (
+const StatCard = ({ label, value, sub, colorBg, colorText, icon }) => (
   <div style={{
-    background: `rgba(${color},0.06)`,
-    border: `1px solid rgba(${color},0.18)`,
-    borderRadius: 20, padding: 28,
+    background: colorBg,
+    borderRadius: 20,
+    padding: 28,
+    border: "none",
   }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
       <div>
-        <p style={{ fontSize: 12, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>{label}</p>
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 40, fontWeight: 800, color: "#F8FAFC", margin: 0 }}>{value}</p>
-        {sub && <p style={{ fontSize: 12, color: `rgb(${color})`, marginTop: 8 }}>{sub}</p>}
+        <p style={{ fontSize: 11, color: colorText, opacity: 0.65, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12, fontWeight: 700 }}>{label}</p>
+        <p style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 38, fontWeight: 800, color: colorText, margin: 0, letterSpacing: -0.8 }}>{value}</p>
+        {sub && <p style={{ fontSize: 12, color: colorText, opacity: 0.65, marginTop: 8, fontWeight: 500 }}>{sub}</p>}
       </div>
-      <span style={{ fontSize: 28 }}>{icon}</span>
+      <span style={{ fontSize: 26, opacity: 0.8 }}>{icon}</span>
     </div>
   </div>
 );
@@ -42,11 +43,12 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "#0F2040", border: "1px solid rgba(0,212,200,0.3)",
-      borderRadius: 10, padding: "12px 16px",
+      background: "#fff", border: "1px solid #DDE8EF",
+      borderRadius: 12, padding: "12px 18px",
+      boxShadow: "0 4px 20px rgba(15,28,46,0.1)",
     }}>
-      <p style={{ color: "#94A3B8", fontSize: 12, margin: "0 0 4px" }}>{label}</p>
-      <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 18, margin: 0 }}>
+      <p style={{ color: "#7A94A8", fontSize: 12, margin: "0 0 4px", fontWeight: 600 }}>{label}</p>
+      <p style={{ color: "#0B7B6F", fontWeight: 700, fontSize: 18, margin: 0 }}>
         {payload[0].value} predictions
       </p>
     </div>
@@ -63,8 +65,6 @@ const chartData = [
   { day: "Sun", predictions: 50 },
 ];
 
-const TEAL = "#00D4C8";
-
 function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,24 +78,30 @@ function Dashboard() {
 
   return (
     <div style={pg}>
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 12, color: "#00D4C8", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>PLATFORM METRICS</p>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 42, fontWeight: 800, margin: "0 0 8px" }}>
+        <div style={{ marginBottom: 44 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "#0B7B6F",
+            background: "#EBF8F6", border: "1px solid #B2E8E2",
+            padding: "4px 14px", borderRadius: 100, letterSpacing: 1,
+            textTransform: "uppercase", display: "inline-block", marginBottom: 16,
+          }}>Platform Metrics</span>
+          <h1 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 40, fontWeight: 800, margin: "0 0 10px", color: "#0F1C2E", letterSpacing: -1 }}>
             Analytics Dashboard
           </h1>
-          <p style={{ color: "#64748B", fontSize: 16 }}>
+          <p style={{ color: "#7A94A8", fontSize: 16, margin: 0, lineHeight: 1.6 }}>
             Real-time performance metrics and system status for AI DOC.
           </p>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "80px 0", color: "#475569" }}>
+          <div style={{ textAlign: "center", padding: "100px 0", color: "#8FA5B5" }}>
             <div style={{
-              width: 40, height: 40, border: "3px solid rgba(0,212,200,0.2)",
-              borderTop: "3px solid #00D4C8", borderRadius: "50%",
+              width: 40, height: 40, border: "3px solid #E8EFF5",
+              borderTop: "3px solid #0B7B6F", borderRadius: "50%",
               animation: "spin 0.8s linear infinite", margin: "0 auto 20px",
             }} />
             Loading analytics…
@@ -103,32 +109,30 @@ function Dashboard() {
         ) : (
           <>
             {/* Stat cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginBottom: 28 }}>
-              <StatCard label="Total Predictions" value={analytics?.total_predictions || "1,254"} sub="All time" color="0,212,200" icon="🔮" />
-              <StatCard label="Top-3 Accuracy" value="52.9%" sub="Symptoms model" color="34,197,94" icon="🎯" />
-              <StatCard label="Diseases Covered" value="49" sub="Tier A diseases" color="167,139,250" icon="🧬" />
-              <StatCard label="Training Images" value="35K+" sub="Biomedical scans" color="251,146,60" icon="🩻" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18, marginBottom: 24 }}>
+              <StatCard label="Total Predictions" value={analytics?.total_predictions || "1,254"} sub="All time" colorBg="#EBF8F6" colorText="#0B7B6F" icon="🔮" />
+              <StatCard label="Top-3 Accuracy" value="52.9%" sub="Symptoms model" colorBg="#EBF4F9" colorText="#1D6FA4" icon="🎯" />
+              <StatCard label="Diseases Covered" value="49" sub="Tier A diseases" colorBg="#F2EEF9" colorText="#5B3DB8" icon="🧬" />
+              <StatCard label="Training Images" value="35K+" sub="Biomedical scans" colorBg="#FFF4EC" colorText="#C05B1A" icon="🩻" />
             </div>
 
             {/* Chart + status */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20, marginBottom: 28 }}>
-
-              {/* Bar chart */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 18, marginBottom: 24 }}>
               <div style={card()}>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 24px" }}>
+                <h2 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 18, fontWeight: 700, margin: "0 0 24px", color: "#0F1C2E" }}>
                   Weekly Prediction Trends
                 </h2>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={chartData} barSize={32}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={chartData} barSize={30}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F5F8" vertical={false} />
                     <XAxis dataKey="day" axisLine={false} tickLine={false}
-                      tick={{ fill: "#64748B", fontSize: 12 }} />
+                      tick={{ fill: "#8FA5B5", fontSize: 12 }} />
                     <YAxis axisLine={false} tickLine={false}
-                      tick={{ fill: "#64748B", fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                      tick={{ fill: "#8FA5B5", fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(11,123,111,0.04)" }} />
                     <Bar dataKey="predictions" radius={[8, 8, 0, 0]}>
                       {chartData.map((_, i) => (
-                        <Cell key={i} fill={i === 4 ? TEAL : "rgba(0,212,200,0.25)"} />
+                        <Cell key={i} fill={i === 4 ? "#0B7B6F" : "#C6E9E5"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -137,24 +141,29 @@ function Dashboard() {
 
               {/* Platform status */}
               <div style={card()}>
-                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 17, fontWeight: 700, margin: "0 0 24px", color: "#0F1C2E" }}>
                   Platform Status
                 </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {[
                     { label: "Backend API", status: "Online", ok: true },
                     { label: "Symptom Model", status: "Active", ok: true },
                     { label: "Image Model", status: "Training", ok: false },
                     { label: "Fusion Model", status: "Pending", ok: false },
                   ].map(({ label, status, ok }) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 14, color: "#94A3B8" }}>{label}</span>
+                    <div key={label} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "12px 16px", borderRadius: 12,
+                      background: "#F8FAFB", border: "1px solid #EDF2F6",
+                    }}>
+                      <span style={{ fontSize: 14, color: "#4A6275", fontWeight: 500 }}>{label}</span>
                       <span style={{
-                        fontSize: 12, fontWeight: 600,
+                        fontSize: 11, fontWeight: 700,
                         padding: "4px 12px", borderRadius: 100,
-                        background: ok ? "rgba(34,197,94,0.1)" : "rgba(251,191,36,0.1)",
-                        color: ok ? "#22C55E" : "#FBBF24",
-                        border: `1px solid ${ok ? "rgba(34,197,94,0.3)" : "rgba(251,191,36,0.3)"}`,
+                        background: ok ? "#EBF8F6" : "#FFF8EC",
+                        color: ok ? "#0B7B6F" : "#C05B1A",
+                        border: `1px solid ${ok ? "#B2E8E2" : "#F5D8B8"}`,
+                        textTransform: "uppercase", letterSpacing: 0.6,
                       }}>{status}</span>
                     </div>
                   ))}
@@ -164,29 +173,33 @@ function Dashboard() {
 
             {/* Model performance */}
             <div style={card()}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, margin: "0 0 28px" }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 18, fontWeight: 700, margin: "0 0 28px", color: "#0F1C2E" }}>
                 Model Performance Overview
               </h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 {[
-                  { label: "Symptom Model — Top-3 Accuracy (Exp 3)", pct: 52.9, color: "#00D4C8", detail: "TF-IDF + Logistic Regression · 49 diseases" },
-                  { label: "Symptom Model — Top-3 Accuracy (Exp 1, 5% data)", pct: 40.3, color: "#A78BFA", detail: "Scarcity simulation · 514 training samples" },
-                  { label: "Image Model — In Training", pct: 35, color: "#22C55E", detail: "EfficientNet-B4 · 28,299 training images" },
-                  { label: "Fusion Model — Not Yet Built", pct: 0, color: "#FB923C", detail: "Cross-attention · Coming soon" },
-                ].map(({ label, pct, color, detail }) => (
+                  { label: "Symptom Model — Top-3 Accuracy (Exp 3)", pct: 52.9, color: "#0B7B6F", bg: "#EBF8F6", detail: "TF-IDF + Logistic Regression · 49 diseases" },
+                  { label: "Symptom Model — Top-3 Accuracy (Exp 1, 5% data)", pct: 40.3, color: "#5B3DB8", bg: "#F2EEF9", detail: "Scarcity simulation · 514 training samples" },
+                  { label: "Image Model — In Training", pct: 35, color: "#1D6FA4", bg: "#EBF4F9", detail: "EfficientNet-B4 · 28,299 training images" },
+                  { label: "Fusion Model — Not Yet Built", pct: 0, color: "#C05B1A", bg: "#FFF4EC", detail: "Cross-attention · Coming soon" },
+                ].map(({ label, pct, color, bg, detail }) => (
                   <div key={label}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                       <div>
-                        <p style={{ fontSize: 14, color: "#F8FAFC", fontWeight: 600, margin: "0 0 2px" }}>{label}</p>
-                        <p style={{ fontSize: 12, color: "#64748B", margin: 0 }}>{detail}</p>
+                        <p style={{ fontSize: 14, color: "#0F1C2E", fontWeight: 600, margin: "0 0 3px" }}>{label}</p>
+                        <p style={{ fontSize: 12, color: "#8FA5B5", margin: 0 }}>{detail}</p>
                       </div>
-                      <span style={{ fontSize: 18, fontWeight: 700, color, alignSelf: "center" }}>{pct}%</span>
+                      <span style={{
+                        fontSize: 16, fontWeight: 800, color,
+                        background: bg, padding: "4px 12px", borderRadius: 8,
+                        alignSelf: "center", flexShrink: 0, marginLeft: 16,
+                        fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                      }}>{pct}%</span>
                     </div>
-                    <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 100 }}>
+                    <div style={{ height: 7, background: "#F0F5F8", borderRadius: 100 }}>
                       <div style={{
-                        height: 6, width: `${pct}%`, background: color,
+                        height: 7, width: `${pct}%`, background: color,
                         borderRadius: 100, transition: "width 1s ease",
-                        boxShadow: `0 0 8px ${color}66`,
                       }} />
                     </div>
                   </div>

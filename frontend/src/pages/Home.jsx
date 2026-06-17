@@ -1,127 +1,131 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
 
-/* ── tiny inline styles ── */
 const S = {
   page: {
     minHeight: "100vh",
-    background: "#0A1628",
-    color: "#F8FAFC",
+    background: "#F8FAFB",
+    color: "#0F1C2E",
     fontFamily: "'Inter', sans-serif",
   },
   hero: {
-    maxWidth: 1280,
+    maxWidth: 1200,
     margin: "0 auto",
-    padding: "80px 32px 60px",
+    padding: "96px 40px 80px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: 64,
+    gap: 72,
     alignItems: "center",
   },
-  badge: {
+  eyebrow: {
     display: "inline-flex",
     alignItems: "center",
     gap: 8,
-    background: "rgba(0,212,200,0.1)",
-    border: "1px solid rgba(0,212,200,0.3)",
-    color: "#00D4C8",
-    padding: "8px 16px",
+    background: "#EBF8F6",
+    border: "1px solid #B2E8E2",
+    color: "#0B7B6F",
+    padding: "7px 16px",
     borderRadius: 100,
-    fontSize: 13,
-    fontWeight: 500,
-    letterSpacing: 0.5,
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
     marginBottom: 28,
   },
   h1: {
-    fontFamily: "'Syne', sans-serif",
-    fontSize: 60,
+    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+    fontSize: 58,
     fontWeight: 800,
-    lineHeight: 1.08,
-    color: "#F8FAFC",
+    lineHeight: 1.06,
+    color: "#0F1C2E",
     margin: "0 0 24px",
+    letterSpacing: -1.5,
   },
-  accent: { color: "#00D4C8" },
+  accent: {
+    background: "linear-gradient(90deg, #0B7B6F, #1D6FA4)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+  },
   sub: {
-    fontSize: 18,
-    color: "#94A3B8",
-    lineHeight: 1.7,
+    fontSize: 17,
+    color: "#5A7184",
+    lineHeight: 1.75,
     maxWidth: 480,
     margin: "0 0 40px",
   },
-  btnRow: { display: "flex", gap: 16 },
   btnPrimary: {
-    background: "linear-gradient(135deg, #00D4C8, #0066FF)",
+    background: "#0B7B6F",
     color: "#fff",
     border: "none",
-    padding: "16px 36px",
-    borderRadius: 12,
+    padding: "15px 32px",
+    borderRadius: 10,
     fontWeight: 700,
-    fontSize: 16,
+    fontSize: 15,
     cursor: "pointer",
-    boxShadow: "0 8px 32px rgba(0,212,200,0.35)",
-    transition: "transform 0.2s, box-shadow 0.2s",
     fontFamily: "'Inter', sans-serif",
+    letterSpacing: 0.2,
+    transition: "background 0.2s, transform 0.15s",
   },
   btnSecondary: {
-    background: "transparent",
-    color: "#F8FAFC",
-    border: "1px solid rgba(248,250,252,0.2)",
-    padding: "16px 36px",
-    borderRadius: 12,
+    background: "#fff",
+    color: "#0F1C2E",
+    border: "1.5px solid #D6E0EA",
+    padding: "15px 32px",
+    borderRadius: 10,
     fontWeight: 600,
-    fontSize: 16,
+    fontSize: 15,
     cursor: "pointer",
-    transition: "all 0.2s",
     fontFamily: "'Inter', sans-serif",
+    transition: "border-color 0.2s, background 0.2s",
   },
 };
 
-/* ── Pulse dot ── */
-const PulseDot = () => (
-  <span style={{ position: "relative", display: "inline-block", width: 10, height: 10 }}>
+const LiveDot = () => (
+  <span style={{ position: "relative", display: "inline-block", width: 8, height: 8 }}>
     <span style={{
       position: "absolute", inset: 0, borderRadius: "50%",
-      background: "#00D4C8", animation: "ping 1.4s ease-in-out infinite",
+      background: "#0B7B6F", animation: "ping 1.6s ease-in-out infinite", opacity: 0.6,
     }} />
-    <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#00D4C8" }} />
-    <style>{`@keyframes ping{0%{transform:scale(1);opacity:1}70%{transform:scale(2);opacity:0}100%{transform:scale(1);opacity:0}}`}</style>
+    <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#0B7B6F" }} />
+    <style>{`@keyframes ping{0%{transform:scale(1);opacity:0.6}70%{transform:scale(2.2);opacity:0}100%{transform:scale(1);opacity:0}}`}</style>
   </span>
 );
 
-/* ── Stats card ── */
-const StatCard = ({ label, value, color, bg }) => (
+const FeatureCard = ({ icon, title, desc, tag }) => (
   <div style={{
-    background: bg,
-    border: `1px solid ${color}22`,
-    borderRadius: 16,
-    padding: "20px 24px",
-  }}>
-    <p style={{ fontSize: 12, color: "#64748B", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{label}</p>
-    <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 800, color, margin: 0 }}>{value}</p>
-  </div>
-);
-
-/* ── Feature card ── */
-const FeatureCard = ({ icon, title, desc }) => (
-  <div style={{
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 20,
+    background: "#fff",
+    border: "1px solid #E8EFF5",
+    borderRadius: 18,
     padding: "32px 28px",
-    transition: "border-color 0.2s, transform 0.2s",
+    transition: "box-shadow 0.2s, transform 0.2s",
     cursor: "default",
   }}
-    onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,212,200,0.3)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "none"; }}
+    onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 32px rgba(11,123,111,0.10)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+    onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
   >
     <div style={{
       width: 48, height: 48, borderRadius: 12,
-      background: "rgba(0,212,200,0.12)",
+      background: "#EBF8F6",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: 22, marginBottom: 20,
     }}>{icon}</div>
-    <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, color: "#F8FAFC", margin: "0 0 12px" }}>{title}</h3>
-    <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.7, margin: 0 }}>{desc}</p>
+    {tag && (
+      <span style={{
+        fontSize: 11, fontWeight: 700, color: "#0B7B6F",
+        background: "#EBF8F6", border: "1px solid #B2E8E2",
+        padding: "3px 10px", borderRadius: 100, letterSpacing: 0.6,
+        textTransform: "uppercase", marginBottom: 14, display: "inline-block",
+      }}>{tag}</span>
+    )}
+    <h3 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 17, fontWeight: 700, color: "#0F1C2E", margin: "0 0 10px" }}>{title}</h3>
+    <p style={{ fontSize: 14, color: "#7A94A8", lineHeight: 1.7, margin: 0 }}>{desc}</p>
+  </div>
+);
+
+const StatPill = ({ val, label }) => (
+  <div style={{ textAlign: "left" }}>
+    <div style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 28, fontWeight: 800, color: "#0F1C2E", letterSpacing: -0.5 }}>{val}</div>
+    <div style={{ fontSize: 12, color: "#8FA5B5", marginTop: 3, fontWeight: 500 }}>{label}</div>
   </div>
 );
 
@@ -130,13 +134,15 @@ function Home() {
 
   return (
     <div style={S.page}>
-      {/* ── HERO ── */}
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+
+      {/* HERO */}
       <div style={S.hero}>
         {/* Left */}
         <div>
-          <div style={S.badge}>
-            <PulseDot />
-            AI-Powered Clinical Intelligence Platform
+          <div style={S.eyebrow}>
+            <LiveDot />
+            AI Clinical Intelligence Platform
           </div>
 
           <h1 style={S.h1}>
@@ -146,87 +152,91 @@ function Home() {
           </h1>
 
           <p style={S.sub}>
-            Submit patient symptoms and biomedical scans.
-            Our multimodal AI system cross-references 1,374 rare diseases
-            to return ranked, confidence-scored differential diagnoses.
+            Submit patient symptoms and biomedical scans. Our multimodal AI cross-references 1,374 rare diseases and returns ranked, confidence-scored differential diagnoses.
           </p>
 
-          <div style={S.btnRow}>
+          <div style={{ display: "flex", gap: 12 }}>
             <button
               style={S.btnPrimary}
               onClick={() => navigate("/predict")}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,212,200,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,212,200,0.35)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#08635A"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#0B7B6F"; }}
             >
               Start Diagnosis →
             </button>
             <button
               style={S.btnSecondary}
               onClick={() => navigate("/dashboard")}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "#9BB8CC"; e.currentTarget.style.background = "#F5F9FC"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "#D6E0EA"; e.currentTarget.style.background = "#fff"; }}
             >
               View Dashboard
             </button>
           </div>
 
-          {/* Trust row */}
-          <div style={{ display: "flex", gap: 32, marginTop: 48 }}>
-            {[
-              { val: "36K+", label: "Patient Cases" },
-              { val: "1,374", label: "Rare Diseases" },
-              { val: "94K+", label: "Medical Images" },
-            ].map(({ val, label }) => (
-              <div key={label}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 800, color: "#F8FAFC" }}>{val}</div>
-                <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{label}</div>
-              </div>
-            ))}
+          <div style={{ display: "flex", gap: 40, marginTop: 52, paddingTop: 40, borderTop: "1px solid #E8EFF5" }}>
+            <StatPill val="36K+" label="Patient Cases" />
+            <StatPill val="1,374" label="Rare Diseases" />
+            <StatPill val="94K+" label="Medical Images" />
           </div>
         </div>
 
-        {/* Right — dashboard preview */}
+        {/* Right — dashboard preview card */}
         <div style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(0,212,200,0.2)",
-          borderRadius: 28,
+          background: "#fff",
+          border: "1px solid #E0EBF2",
+          borderRadius: 24,
           padding: 32,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          boxShadow: "0 20px 60px rgba(15,28,46,0.08)",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: "#F8FAFC" }}>
-              Live Dashboard
+            <span style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 700, fontSize: 16, color: "#0F1C2E" }}>
+              System Status
             </span>
             <span style={{
               display: "flex", alignItems: "center", gap: 6,
-              background: "rgba(0,212,200,0.12)", border: "1px solid rgba(0,212,200,0.3)",
-              color: "#00D4C8", padding: "6px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600,
+              background: "#EBF8F6", border: "1px solid #B2E8E2",
+              color: "#0B7B6F", padding: "5px 12px", borderRadius: 100,
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
             }}>
-              <PulseDot /> Online
+              <LiveDot /> Online
             </span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-            <StatCard label="Predictions" value="1,254" color="#00D4C8" bg="rgba(0,212,200,0.06)" />
-            <StatCard label="Accuracy" value="34%" color="#22C55E" bg="rgba(34,197,94,0.06)" />
-            <StatCard label="Diseases" value="49" color="#A78BFA" bg="rgba(167,139,250,0.06)" />
-            <StatCard label="Images" value="35K+" color="#FB923C" bg="rgba(251,146,60,0.06)" />
+          {/* Stats grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 24 }}>
+            {[
+              { label: "Predictions", value: "1,254", color: "#EBF8F6", textColor: "#0B7B6F" },
+              { label: "Top-3 Accuracy", value: "52.9%", color: "#EBF4F9", textColor: "#1D6FA4" },
+              { label: "Diseases Covered", value: "49", color: "#F2EEF9", textColor: "#5B3DB8" },
+              { label: "Training Images", value: "35K+", color: "#FFF4EC", textColor: "#C05B1A" },
+            ].map(({ label, value, color, textColor }) => (
+              <div key={label} style={{
+                background: color,
+                borderRadius: 14,
+                padding: "18px 20px",
+              }}>
+                <p style={{ fontSize: 11, color: textColor, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 8px", fontWeight: 600 }}>{label}</p>
+                <p style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 28, fontWeight: 800, color: textColor, margin: 0 }}>{value}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Mini status */}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 20 }}>
+          {/* Model bars */}
+          <div style={{ borderTop: "1px solid #EDF2F6", paddingTop: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#8FA5B5", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 16px" }}>Model Performance</p>
             {[
-              { label: "Symptom Model", pct: 34, color: "#00D4C8" },
-              { label: "Image Model", pct: 62, color: "#22C55E" },
-              { label: "Fusion Model", pct: 0, color: "#A78BFA", note: "In training" },
+              { label: "Symptom Model", pct: 52.9, color: "#0B7B6F" },
+              { label: "Image Model", pct: 35, color: "#1D6FA4", note: "Training" },
+              { label: "Fusion Model", pct: 0, color: "#9B8ED6", note: "Coming soon" },
             ].map(({ label, pct, color, note }) => (
               <div key={label} style={{ marginBottom: 14 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#94A3B8", marginBottom: 6 }}>
-                  <span>{label}</span>
-                  <span style={{ color }}>{note || `${pct}%`}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
+                  <span style={{ color: "#4A6275", fontWeight: 500 }}>{label}</span>
+                  <span style={{ color, fontWeight: 700, fontSize: 12 }}>{note || `${pct}%`}</span>
                 </div>
-                <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
-                  <div style={{ height: 4, width: `${pct}%`, background: color, borderRadius: 4, transition: "width 1s ease" }} />
+                <div style={{ height: 5, background: "#EDF2F6", borderRadius: 100 }}>
+                  <div style={{ height: 5, width: `${pct}%`, background: color, borderRadius: 100, transition: "width 1s ease" }} />
                 </div>
               </div>
             ))}
@@ -234,35 +244,95 @@ function Home() {
         </div>
       </div>
 
-      {/* ── FEATURES ── */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "60px 32px" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 12, color: "#00D4C8", letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
-            CAPABILITIES
-          </p>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 44, fontWeight: 800, color: "#F8FAFC", margin: "0 0 16px" }}>
-            Three Diagnostic Pathways
-          </h2>
-          <p style={{ fontSize: 16, color: "#64748B", maxWidth: 520, margin: "0 auto" }}>
-            Use symptoms alone, images alone, or both together. The fusion model combines all signals for highest accuracy.
-          </p>
-        </div>
+      {/* FEATURES */}
+      <div style={{ background: "#fff", borderTop: "1px solid #EDF2F6", borderBottom: "1px solid #EDF2F6" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 40px" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: "#0B7B6F",
+              background: "#EBF8F6", border: "1px solid #B2E8E2",
+              padding: "4px 14px", borderRadius: 100, letterSpacing: 1,
+              textTransform: "uppercase", display: "inline-block", marginBottom: 20,
+            }}>Capabilities</span>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 40, fontWeight: 800, color: "#0F1C2E", margin: "0 0 16px", letterSpacing: -0.8 }}>
+              Three Diagnostic Pathways
+            </h2>
+            <p style={{ fontSize: 16, color: "#7A94A8", maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>
+              Symptoms alone, images alone, or both combined. The fusion model achieves highest accuracy by cross-weighting all signals.
+            </p>
+          </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
-          <FeatureCard icon="🧬" title="Symptom Analysis" desc="TF-IDF encoded symptom vectors fed into a multinomial classifier trained on 8,568 patient cases." />
-          <FeatureCard icon="🔬" title="Image Detection" desc="EfficientNet-B4 fine-tuned on 35,374 biomedical images — MRI, CT, histopathology, dermatology." />
-          <FeatureCard icon="🤖" title="Fusion Prediction" desc="Cross-attention fusion of both modalities. Correct disease in top-3 predictions 53% of the time." />
-          <FeatureCard icon="📊" title="Analytics" desc="Monitor prediction history, confidence distributions, and model performance metrics in real time." />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+            <FeatureCard icon="🧬" tag="NLP" title="Symptom Analysis" desc="TF-IDF encoded symptom vectors fed into a multinomial classifier trained on 8,568 patient cases across 49 diseases." />
+            <FeatureCard icon="🔬" tag="Computer Vision" title="Image Detection" desc="EfficientNet-B4 fine-tuned on 35,374 biomedical images — MRI, CT, histopathology, dermoscopy." />
+            <FeatureCard icon="🤖" tag="Fusion" title="Multimodal AI" desc="Cross-attention fusion of both modalities. Correct diagnosis appears in top-3 predictions 53% of the time." />
+            <FeatureCard icon="📊" tag="Analytics" title="Live Analytics" desc="Monitor prediction history, confidence distributions, and model performance metrics in real time." />
+          </div>
         </div>
       </div>
 
-      {/* ── FOOTER ── */}
+      {/* HOW IT WORKS */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 40px" }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "#0B7B6F",
+            background: "#EBF8F6", border: "1px solid #B2E8E2",
+            padding: "4px 14px", borderRadius: 100, letterSpacing: 1,
+            textTransform: "uppercase", display: "inline-block", marginBottom: 20,
+          }}>Process</span>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 40, fontWeight: 800, color: "#0F1C2E", margin: "0 0 16px", letterSpacing: -0.8 }}>
+            Diagnosis in 3 Steps
+          </h2>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0, position: "relative" }}>
+          {[
+            { step: "01", title: "Enter Symptoms", desc: "Describe the patient's symptoms in natural language or select from common symptom chips.", icon: "📝" },
+            { step: "02", title: "Upload Scan (Optional)", desc: "Add a biomedical image — MRI, CT, dermoscopy, or histopathology — for multimodal analysis.", icon: "🩻" },
+            { step: "03", title: "Receive Diagnosis", desc: "Get ranked differential diagnoses with probability scores, confidence levels, and model attribution.", icon: "🎯" },
+          ].map(({ step, title, desc, icon }, i) => (
+            <div key={step} style={{ position: "relative" }}>
+              {i < 2 && (
+                <div style={{
+                  position: "absolute", top: 40, right: -1, width: 2,
+                  height: 60, background: "linear-gradient(180deg, #B2E8E2, #E8EFF5)",
+                  zIndex: 1,
+                }} />
+              )}
+              <div style={{
+                padding: "40px 36px",
+                background: i === 1 ? "#EBF8F6" : "#fff",
+                border: "1px solid #E8EFF5",
+                borderRadius: i === 0 ? "18px 0 0 18px" : i === 2 ? "0 18px 18px 0" : "0",
+                borderLeft: i > 0 ? "none" : "1px solid #E8EFF5",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+                  <span style={{
+                    fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+                    fontSize: 12, fontWeight: 800, color: "#0B7B6F",
+                    background: "#fff", border: "1.5px solid #B2E8E2",
+                    width: 40, height: 40, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>{step}</span>
+                  <span style={{ fontSize: 24 }}>{icon}</span>
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontSize: 18, fontWeight: 700, color: "#0F1C2E", margin: "0 0 12px" }}>{title}</h3>
+                <p style={{ fontSize: 14, color: "#7A94A8", lineHeight: 1.7, margin: 0 }}>{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FOOTER */}
       <footer style={{
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        padding: "32px",
+        borderTop: "1px solid #EDF2F6",
+        padding: "32px 40px",
         textAlign: "center",
-        color: "#475569",
+        color: "#9BB8CC",
         fontSize: 13,
+        background: "#fff",
       }}>
         © 2026 AI DOC · Rare Disease Detection System · ZebraMap Dataset · CC BY 4.0
       </footer>

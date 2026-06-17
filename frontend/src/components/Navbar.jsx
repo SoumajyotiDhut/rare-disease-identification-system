@@ -22,79 +22,70 @@ function Navbar({ dark, setDark }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        transition: "all 0.3s ease",
-        background: scrolled
-          ? "rgba(10,22,40,0.95)"
-          : "rgba(10,22,40,1)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(0,212,200,0.15)",
-        boxShadow: scrolled ? "0 4px 40px rgba(0,0,0,0.4)" : "none",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          height: 72,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 32px",
-        }}
-      >
+    <header style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      transition: "all 0.3s ease",
+      background: scrolled ? "rgba(248,250,251,0.96)" : "#fff",
+      backdropFilter: "blur(16px)",
+      borderBottom: scrolled ? "1px solid #DDE8EF" : "1px solid #EDF2F6",
+      boxShadow: scrolled ? "0 2px 20px rgba(15,28,46,0.06)" : "none",
+    }}>
+      <div style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        height: 68,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 40px",
+      }}>
         {/* Logo */}
         <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 12,
-              background: "linear-gradient(135deg, #00D4C8, #0066FF)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 800,
-              fontSize: 14,
-              color: "#fff",
-              letterSpacing: 1,
-              boxShadow: "0 0 20px rgba(0,212,200,0.4)",
-            }}
-          >
+          <div style={{
+            width: 38,
+            height: 38,
+            borderRadius: 10,
+            background: "#0B7B6F",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 800,
+            fontSize: 13,
+            color: "#fff",
+            letterSpacing: 0.5,
+            flexShrink: 0,
+          }}>
             AI
           </div>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: "#F8FAFC", letterSpacing: 0.5 }}>
+            <div style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 800, fontSize: 17, color: "#0F1C2E", letterSpacing: -0.3 }}>
               AI DOC
             </div>
-            <div style={{ fontSize: 11, color: "#00D4C8", letterSpacing: 1.5, textTransform: "uppercase" }}>
+            <div style={{ fontSize: 10, color: "#0B7B6F", letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 600 }}>
               Rare Disease Assistant
             </div>
           </div>
         </Link>
 
         {/* Clock */}
-        <div
-          style={{
-            fontFamily: "'Inter', monospace",
-            fontSize: 13,
-            color: "#00D4C8",
-            background: "rgba(0,212,200,0.08)",
-            border: "1px solid rgba(0,212,200,0.2)",
-            padding: "6px 14px",
-            borderRadius: 8,
-            letterSpacing: 1,
-          }}
-        >
+        <div style={{
+          fontFamily: "'Inter', monospace",
+          fontSize: 12,
+          color: "#5A7184",
+          background: "#F0F5F8",
+          border: "1px solid #DDE8EF",
+          padding: "5px 12px",
+          borderRadius: 8,
+          letterSpacing: 0.8,
+          fontWeight: 500,
+        }}>
           {time}
         </div>
 
         {/* Nav */}
-        <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {[
             { path: "/", label: "Home" },
             { path: "/predict", label: "Predict" },
@@ -106,14 +97,14 @@ function Navbar({ dark, setDark }) {
               to={path}
               style={{
                 textDecoration: "none",
-                padding: "8px 18px",
+                padding: "8px 16px",
                 borderRadius: 8,
                 fontSize: 14,
-                fontWeight: isActive(path) ? 600 : 400,
-                color: isActive(path) ? "#00D4C8" : "#94A3B8",
-                background: isActive(path) ? "rgba(0,212,200,0.12)" : "transparent",
-                border: isActive(path) ? "1px solid rgba(0,212,200,0.25)" : "1px solid transparent",
-                transition: "all 0.2s ease",
+                fontWeight: isActive(path) ? 600 : 500,
+                color: isActive(path) ? "#0B7B6F" : "#5A7184",
+                background: isActive(path) ? "#EBF8F6" : "transparent",
+                border: isActive(path) ? "1px solid #B2E8E2" : "1px solid transparent",
+                transition: "all 0.15s ease",
               }}
             >
               {label}
@@ -124,15 +115,17 @@ function Navbar({ dark, setDark }) {
             onClick={() => setDark(!dark)}
             style={{
               marginLeft: 8,
-              padding: "8px 14px",
+              padding: "7px 12px",
               borderRadius: 8,
-              border: "1px solid rgba(148,163,184,0.2)",
-              background: "transparent",
-              color: "#94A3B8",
+              border: "1px solid #DDE8EF",
+              background: "#F8FAFB",
+              color: "#5A7184",
               cursor: "pointer",
-              fontSize: 16,
-              transition: "all 0.2s ease",
+              fontSize: 15,
+              transition: "all 0.15s ease",
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#EDF2F6"; e.currentTarget.style.borderColor = "#C8D8E4"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#F8FAFB"; e.currentTarget.style.borderColor = "#DDE8EF"; }}
           >
             {dark ? "☀️" : "🌙"}
           </button>
