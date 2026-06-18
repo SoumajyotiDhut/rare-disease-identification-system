@@ -2,44 +2,59 @@ from fastapi import FastAPI, Form, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import Optional
-import os, pickle, numpy as np
+import os, pickle, json, numpy as np
 
 app = FastAPI(title="AI DOC — Rare Disease API")
 
-# ── CORS — explicit and robust ──
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://rare-disease-identification-system.vercel.app",
         "http://localhost:5173",
         "http://localhost:3000",
-        "*",  # fallback - remove in production if needed
+        "*",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# ── Global state ──
-_tfidf    = None
-_lr_model = None
-_le       = None
-_history  = []
+_tfidf       = None
+_lr_model    = None
+_le          = None
+_disease_map = None
+_history     = []
 
 def load_models():
-    global _tfidf, _lr_model, _le
+    global _tfidf, _lr_model, _le, _disease_map
     if _tfidf is not None:
         return
     print("Loading models...")
     base = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "models")
-    with open(f"{base}/tfidf_vectorizer.pkl",        "rb") as f:
-        _tfidf    = pickle.load(f)
-    with open(f"{base}/lr_symptoms_model.pkl",       "rb") as f:
+
+    with open(f"{base}/tfidf_vectorizer.pkl",       "rb") as f:
+        _tfidf = pickle.load(f)
+    with open(f"{base}/lr_symptoms_model.pkl",      "rb") as f:
         _lr_model = pickle.load(f)
-    with open(f"{base}/label_encoder_symptoms.pkl",  "rb") as f:
-        _le       = pickle.load(f)
+    with open(f"{base}/label_encoder_symptoms.pkl", "rb") as f:
+        _le = pickle.load(f)
+
+    # Load disease name mapping
+    try:
+        with open(f"{base}/disease_names.json", "r") as f:
+            _disease_map = json.load(f)
+    except FileNotFoundError:
+        _disease_map = {}
+        print("⚠️ disease_names.json not found — using ORPHA codes only")
+
     print("✅ Models loaded")
+
+def get_disease_name(orpha_code: str) -> str:
+    """Get human-readable name, fallback to ORPHA code"""
+    if _disease_map and orpha_code in _disease_map:
+        return _disease_map[orpha_code]
+    return f"ORPHA:{orpha_code}"
 
 def get_confidence(p):
     return "High" if p>=0.5 else "Medium" if p>=0.2 else "Low"
@@ -55,7 +70,7 @@ def root():
     return {
         "status" : "ok",
         "service": "AI DOC Rare Disease API",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "models" : {
             "symptoms" : "TF-IDF + Logistic Regression",
             "fusion"   : "Symptoms + Image (late weighted)",
@@ -97,11 +112,11 @@ async def predict_text(
         orpha = _le.inverse_transform([idx])[0]
         p     = float(proba[idx])
         predictions.append({
-            "rank"       : rank,
-            "disease"    : f"ORPHA:{orpha}",
-            "orpha_code" : str(orpha),
-            "probability": round(p * 100, 1),
-            "confidence" : get_confidence(p),
+            "rank"        : rank,
+            "disease"     : get_disease_name(str(orpha)),
+            "orpha_code"  : str(orpha),
+            "probability" : round(p * 100, 1),
+            "confidence"  : get_confidence(p),
         })
 
     _history.append({
