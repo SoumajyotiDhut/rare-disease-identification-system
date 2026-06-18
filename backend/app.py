@@ -6,10 +6,17 @@ import os, pickle, numpy as np
 
 app = FastAPI(title="AI DOC — Rare Disease API")
 
+# ── CORS — explicit and robust ──
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=[
+        "https://rare-disease-identification-system.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "*",  # fallback - remove in production if needed
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
