@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { getHistory } from "./services/Api";
-import { useTheme } from "./context/ThemeContext";
-import { useToast } from "./context/ToastContext";
-import HistoryDrawer from "./components/HistoryDrawer";
+import { getHistory } from "../services/Api";
+import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
+import HistoryDrawer from "../components/HistoryDrawer";
 
 const CSS = (c) => `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
