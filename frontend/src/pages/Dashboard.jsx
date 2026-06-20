@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getAnalytics } from "./services/Api";
-import { useTheme } from "./context/ThemeContext";
-import { useToast } from "./context/ToastContext";
+import { getAnalytics } from "../services/Api";
+import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line } from "recharts";
 
 const CSS = (c) => `

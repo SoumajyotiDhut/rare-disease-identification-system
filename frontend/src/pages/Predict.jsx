@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { predictDisease } from "./services/Api";
-import { useTheme } from "./context/ThemeContext";
-import { useToast } from "./context/ToastContext";
+import { predictDisease } from "../services/Api";
+import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 
 const PALETTE_KEY = (c) => [
   { bar: c.teal, light: c.tealL, text: c.teal, border: c.tealB },
