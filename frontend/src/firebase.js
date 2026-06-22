@@ -12,12 +12,12 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDoovf05-tVr7ZqSY7zVj5H7GOflfiawhg",
-    authDomain: "ai-doc-rare-disease.firebaseapp.com",
-    projectId: "ai-doc-rare-disease",
-    storageBucket: "ai-doc-rare-disease.firebasestorage.app",
-    messagingSenderId: "680111522558",
-    appId: "1:680111522558:web:62ef9c979649bf78e01baf",
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
