@@ -1,4 +1,4 @@
-import { auth } from "./firebase";
+import { auth } from "../firebase";
 
 const BASE_URL = "https://soumadhut-ai-doc-rare-disease-api.hf.space";
 
