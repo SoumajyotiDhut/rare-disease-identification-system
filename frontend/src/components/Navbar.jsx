@@ -1,6 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const CSS = (c) => `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
@@ -9,6 +11,7 @@ const CSS = (c) => `
   .desktop-nav    { display:flex }
   .mobile-toggle  { display:none!important }
   .mobile-menu    { display:none }
+  .auth-btn:hover { background:${c.tealL}!important }
   @media(max-width:768px){
     .clock         { display:none!important }
     .desktop-nav   { display:none!important }
@@ -19,6 +22,9 @@ const CSS = (c) => `
 
 function Navbar() {
   const { dark, setDark, c } = useTheme();
+  const { user, authLoading, logout } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
   const [time, setTime] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -42,6 +48,24 @@ function Navbar() {
     { path: "/dashboard", label: "Dashboard" },
     { path: "/history", label: "History" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Signed out.");
+      navigate("/");
+    } catch {
+      toast.error("Couldn't sign out. Try again.");
+    }
+  };
+
+  const initials = (user?.displayName || user?.email || "?")
+    .trim()
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <>
@@ -80,6 +104,7 @@ function Navbar() {
                 transition: "all .15s",
               }}>{label}</Link>
             ))}
+
             <button onClick={() => setDark(!dark)} aria-label="Toggle dark mode" style={{
               marginLeft: 8, padding: "7px 13px", borderRadius: 9,
               border: `1px solid ${c.border}`, background: c.cardAlt,
@@ -87,6 +112,47 @@ function Navbar() {
             }}>
               {dark ? "☀️" : "🌙"}
             </button>
+
+            {/* Auth area */}
+            {!authLoading && (
+              user ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
+                  <div title={user.email} style={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    background: `linear-gradient(135deg,${c.teal},${c.blue})`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, fontWeight: 800, color: "#fff",
+                  }}>
+                    {initials}
+                  </div>
+                  <button onClick={handleLogout} className="auth-btn" style={{
+                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
+                    background: "transparent", color: c.sub, cursor: "pointer", fontSize: 13.5,
+                    fontWeight: 700, transition: "all .15s",
+                  }}>
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
+                  <Link to="/login" className="auth-btn" style={{
+                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
+                    background: "transparent", color: c.sub, textDecoration: "none",
+                    fontSize: 13.5, fontWeight: 700, transition: "all .15s",
+                  }}>
+                    Sign In
+                  </Link>
+                  <Link to="/signup" style={{
+                    padding: "7px 16px", borderRadius: 9, border: "none",
+                    background: `linear-gradient(135deg,${c.teal},${c.blue})`, color: "#fff",
+                    textDecoration: "none", fontSize: 13.5, fontWeight: 700,
+                    boxShadow: `0 4px 12px ${c.teal}40`,
+                  }}>
+                    Sign Up
+                  </Link>
+                </div>
+              )
+            )}
           </nav>
 
           {/* Mobile hamburger */}
@@ -115,6 +181,40 @@ function Navbar() {
                 marginBottom: 4, transition: "all .15s",
               }}>{label}</Link>
             ))}
+
+            {!authLoading && (
+              user ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px" }}>
+                  <span style={{ fontSize: 13.5, color: c.text, fontWeight: 600 }}>
+                    {user.displayName || user.email}
+                  </span>
+                  <button onClick={handleLogout} style={{
+                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
+                    background: "transparent", color: c.sub, cursor: "pointer", fontSize: 13, fontWeight: 700,
+                  }}>
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 8, padding: "8px 16px 0" }}>
+                  <Link to="/login" style={{
+                    flex: 1, textAlign: "center", padding: "10px 14px", borderRadius: 9,
+                    border: `1px solid ${c.border}`, color: c.text, textDecoration: "none",
+                    fontSize: 14, fontWeight: 700,
+                  }}>
+                    Sign In
+                  </Link>
+                  <Link to="/signup" style={{
+                    flex: 1, textAlign: "center", padding: "10px 14px", borderRadius: 9,
+                    border: "none", background: `linear-gradient(135deg,${c.teal},${c.blue})`,
+                    color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 700,
+                  }}>
+                    Sign Up
+                  </Link>
+                </div>
+              )
+            )}
+
             <div style={{ marginTop: 10, paddingTop: 14, borderTop: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 12, color: c.muted, fontFamily: "monospace" }}>{time}</span>
               <button onClick={() => setDark(!dark)} style={{ padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`, background: c.cardAlt, color: c.sub, cursor: "pointer", fontSize: 15 }}>{dark ? "☀️" : "🌙"}</button>

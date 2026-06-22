@@ -361,6 +361,8 @@ function Home() {
             { q: "How is patient data handled?", a: "No patient data is stored. Inputs are processed in-session and are not retained after the session ends. No personal identifiers should be submitted." },
             { q: "What is the fusion model?", a: "The fusion model will combine symptom and imaging signals via cross-attention. It is currently in development and expected to significantly improve accuracy." },
             { q: "How many diseases are covered?", a: "The current Tier A release covers 49 rare diseases with high-quality symptom and imaging data. Coverage will expand as additional datasets are validated." },
+            { q: "Is the system suitable for emergency medical situations?", a: "No. This system is intended for educational and research purposes and should not be used in emergency situations. Always seek immediate medical assistance in urgent cases." },
+            { q: "What is a confidence score?", a: "A confidence score indicates how strongly the AI model believes a prediction is correct. Higher confidence scores generally suggest greater certainty, but they do not guarantee correctness." }
           ].map(({ q, a }) => <FaqItem key={q} q={q} a={a} c={c} />)}
         </div>
       </div>

@@ -47,7 +47,7 @@ function Footer() {
                     </div>
                     <div>
                         <p style={{ fontSize: 10, fontWeight: 800, color: "#5A7184", textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 18px" }}>Models</p>
-                        {[["Symptom Classifier", c.teal, "Active"], ["Image Detector", c.amber, "Training"], ["Fusion Model", c.purple, "Soon"]].map(([n, col, s]) => (
+                        {[["Symptom Classifier", c.teal, "Active"], ["Image Detector", c.amber, "Active"], ["Fusion Model", c.purple, "Active"]].map(([n, col, s]) => (
                             <div key={n} style={{ marginBottom: 13 }}>
                                 <p style={{ fontSize: 13, color: "#94A8BA", margin: "0 0 4px", fontWeight: 500 }}>{n}</p>
                                 <span style={{ fontSize: 10, fontWeight: 800, color: col, background: `${col}22`, border: `1px solid ${col}44`, padding: "2px 10px", borderRadius: 100, letterSpacing: .6, textTransform: "uppercase" }}>{s}</span>
