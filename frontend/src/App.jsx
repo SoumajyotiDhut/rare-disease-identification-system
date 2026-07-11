@@ -14,6 +14,8 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import NotFound from "./pages/NotFound";
 
 /**
  * Inner component so it can call useTheme() — must be inside ThemeProvider.
@@ -30,6 +32,7 @@ function AppShell() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route
             path="/predict"
@@ -55,6 +58,9 @@ function AppShell() {
               </ProtectedRoute>
             }
           />
+
+          {/* Catch-all — must stay last, matches any unmatched URL */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </PageTransition>
       <Footer />
