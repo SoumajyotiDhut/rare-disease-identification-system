@@ -293,7 +293,7 @@ export default function Home() {
                       }} />
                     </div>
                   ) : (
-                    <svg viewBox="0 0 360 400" width="100%" height="auto" style={{ display: "block", margin: "8px 0 4px" }}>
+                    <svg viewBox="0 0 360 400" width="100%" style={{ display: "block", height: "auto", margin: "8px 0 4px" }}>
                       <defs>
                         <radialGradient id="docHalo" cx="50%" cy="42%" r="60%">
                           <stop offset="0%" stopColor={c.teal} stopOpacity="0.16" />

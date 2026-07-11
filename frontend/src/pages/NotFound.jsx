@@ -52,7 +52,7 @@ export default function NotFound() {
                 <span className="eyebrow" style={{ justifyContent: "center", marginBottom: 24 }}>Signal Lost</span>
 
                 {/* Flatline monitor illustration */}
-                <svg viewBox="0 0 320 90" width="100%" height="auto" style={{ maxWidth: 300, margin: "0 auto 8px", display: "block" }}>
+                <svg viewBox="0 0 320 90" width="100%" style={{ maxWidth: 300, margin: "0 auto 8px", display: "block", height: "auto" }}>
                     <path
                         d="M0 45H90L104 15L128 78L146 45H320"
                         fill="none" stroke={c.red} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
