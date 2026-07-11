@@ -2,309 +2,318 @@ import { useEffect, useState } from "react";
 import { getAnalytics } from "../services/Api";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line } from "recharts";
 
 const CSS = (c) => `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
-  @keyframes spin    { to { transform:rotate(360deg) } }
-  @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes barGrow { from{width:0} }
-  .stat-card:hover { transform:translateY(-3px)!important; box-shadow:0 12px 32px rgba(0,0,0,0.1)!important }
-  .range-btn:hover { border-color:${c.tealB}!important; color:${c.teal}!important }
-  .lb-row:hover    { background:${c.bgAlt}!important }
-  @media(max-width:900px){
-    .dash-pad    { padding:40px 20px!important }
-    .stat-grid   { grid-template-columns:1fr 1fr!important }
-    .chart-row   { grid-template-columns:1fr!important }
-    .perf-row    { grid-template-columns:1fr!important }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin     { to{transform:rotate(360deg)} }
+  @keyframes shimmer  { 0%{opacity:.5} 50%{opacity:1} 100%{opacity:.5} }
+  @keyframes drawLine { from{stroke-dashoffset:600} to{stroke-dashoffset:0} }
+
+  .eyebrow {
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    color:${c.gold}; letter-spacing:0.14em; text-transform:uppercase;
+  }
+  .eyebrow::before { content:''; width:20px; height:1px; background:${c.gold}; display:inline-block; }
+
+  .kpi-card { background:${c.card}; border:1px solid ${c.border}; padding:24px 24px; transition:transform .2s, box-shadow .2s, border-color .2s; }
+  .kpi-card:hover { transform:translateY(-3px); box-shadow:${c.shadowLg}; }
+
+  .model-row { border:1px solid ${c.border}; transition:border-color .2s, box-shadow .2s; }
+  .model-row:hover { border-color:${c.tealB}; box-shadow:${c.shadowMd}; }
+
+  .disease-row:hover { background:${c.bgAlt}!important; }
+
+  .skeleton { background:linear-gradient(90deg, ${c.border} 25%, ${c.borderI} 50%, ${c.border} 75%); background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite; }
+
+  .refresh-btn {
+    padding:9px 16px; border-radius:4px; border:1px solid ${c.borderI};
+    background:${c.card}; color:${c.sub}; font-size:13px; font-weight:600;
+    cursor:pointer; font-family:'Inter',sans-serif; transition:all .2s;
+    display:flex; align-items:center; gap:8px;
+  }
+  .refresh-btn:hover:not(:disabled) { border-color:${c.teal}; color:${c.teal}; background:${c.tealL}; }
+  .refresh-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+  @media(max-width:980px){
+    .kpi-grid    { grid-template-columns:1fr 1fr!important }
+    .split-grid  { grid-template-columns:1fr!important }
+    .model-grid  { grid-template-columns:1fr 1fr!important }
     .dash-h1     { font-size:30px!important }
   }
-  @media(max-width:520px){
-    .stat-grid   { grid-template-columns:1fr!important }
+  @media(max-width:560px){
+    .kpi-grid    { grid-template-columns:1fr!important }
+    .model-grid  { grid-template-columns:1fr!important }
+    .dash-pad    { padding:40px 20px!important }
+  }
+  @media(max-width:420px){
+    .dash-pad  { padding:32px 16px!important }
+    .dash-h1   { font-size:25px!important }
+    .kpi-card  { padding:20px 18px!important }
+    .refresh-btn { padding:8px 12px!important; font-size:12px!important }
   }
 `;
 
-const RANGES = {
-  "7D": [{ day: "Mon", v: 40 }, { day: "Tue", v: 65 }, { day: "Wed", v: 85 }, { day: "Thu", v: 55 }, { day: "Fri", v: 95 }, { day: "Sat", v: 75 }, { day: "Sun", v: 50 }],
-  "30D": [{ day: "W1", v: 280 }, { day: "W2", v: 340 }, { day: "W3", v: 410 }, { day: "W4", v: 390 }],
-  "90D": [{ day: "M1", v: 980 }, { day: "M2", v: 1120 }, { day: "M3", v: 1254 }],
-};
-
-const LEADERBOARD = [
-  { rank: 1, disease: "Fabry Disease", count: 187, pct: 14.9, trend: "up" },
-  { rank: 2, disease: "Ehlers-Danlos Syndrome", count: 162, pct: 12.9, trend: "up" },
-  { rank: 3, disease: "Wilson's Disease", count: 134, pct: 10.7, trend: "down" },
-  { rank: 4, disease: "Marfan Syndrome", count: 119, pct: 9.5, trend: "up" },
-  { rank: 5, disease: "Pompe Disease", count: 98, pct: 7.8, trend: "flat" },
-  { rank: 6, disease: "Gaucher Disease", count: 87, pct: 6.9, trend: "down" },
+/** Fixed benchmark results from model evaluation — not user-usage data */
+const MODEL_BENCHMARKS = [
+  { name: "TF-IDF + Logistic Regression", metric: "Top-1 Accuracy", value: 34.73, color: "teal", note: "Symptoms only · 62 Tier-A diseases" },
+  { name: "EfficientNet-B4", metric: "Image Classification", value: 61.2, color: "blue", note: "Fine-tuned on 35K+ biomedical images" },
+  { name: "Late-Weighted Fusion", metric: "Top-1 Accuracy", value: 58.39, color: "purple", note: "0.9 / 0.1 symptom-image weighting" },
+  { name: "Late-Weighted Fusion", metric: "Top-5 Accuracy", value: 83.87, color: "purple", note: "Ranked differential diagnosis" },
+  { name: "FastGAN Augmentation", metric: "Accuracy (Ultra-rare)", value: 87.97, color: "amber", note: "Synthetic data beats full-data baseline" },
 ];
 
-const lineData = [
-  { week: "W1", accuracy: 45 }, { week: "W2", accuracy: 48 }, { week: "W3", accuracy: 50 }, { week: "W4", accuracy: 52.9 },
-];
-const pieData = [
-  { name: "High", value: 38 }, { name: "Medium", value: 44 }, { name: "Low", value: 18 },
-];
-
-function Tip({ active, payload, label, c }) {
-  if (!active || !payload?.length) return null;
+function VitalLine({ color, width = 90, height = 20 }) {
   return (
-    <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 12, padding: "10px 16px", boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
-      <p style={{ color: c.muted, fontSize: 10, margin: "0 0 3px", fontWeight: 800, textTransform: "uppercase", letterSpacing: .6 }}>{label}</p>
-      <p style={{ color: c.teal, fontWeight: 800, fontSize: 18, margin: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>{payload[0].value}{payload[0].name === "accuracy" ? "%" : ""}</p>
-    </div>
+    <svg width={width} height={height} viewBox="0 0 160 28" fill="none">
+      <path d="M0 14H40L48 4L58 24L66 14H160" stroke={color} strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" strokeDasharray="600"
+        style={{ animation: "drawLine 1.4s ease forwards" }} />
+    </svg>
   );
 }
 
-function Dashboard() {
+function Skeleton({ w = "100%", h = 14 }) {
+  return <div className="skeleton" style={{ width: w, height: h, borderRadius: 3 }} />;
+}
+
+export default function Dashboard() {
   const { c } = useTheme();
   const toast = useToast();
-  const [analytics, setAnalytics] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState("7D");
-  const [apiStatus, setApiStatus] = useState("checking"); // checking|online|offline
+  const [err, setErr] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true); setErr(false);
     getAnalytics()
-      .then(d => { setAnalytics(d); setApiStatus("online"); })
+      .then(setData)
       .catch(e => {
         console.error(e);
-        setApiStatus("offline");
-        toast.error("Could not reach the analytics API. Showing cached data.");
+        setErr(true);
+        toast.error("Could not load analytics data.");
       })
       .finally(() => setLoading(false));
-  }, []);
+  };
 
-  const chartData = RANGES[range];
-  const peakIdx = chartData.reduce((maxI, d, i, arr) => d.v > arr[maxI].v ? i : maxI, 0);
+  useEffect(load, []);
 
-  const TREND_ICON = { up: "↑", down: "↓", flat: "→" };
-  const TREND_COLOR = (t) => t === "up" ? c.teal : t === "down" ? c.red : c.muted;
+  const colorMap = {
+    teal: { text: c.teal, bg: c.tealL, border: c.tealB },
+    blue: { text: c.blue, bg: c.blueL, border: c.blueB },
+    purple: { text: c.purple, bg: c.purpL, border: c.purpB },
+    amber: { text: c.amber, bg: c.ambL, border: c.ambB },
+  };
+
+  // Defensive field access — analytics API shape may evolve
+  const totalPredictions = data?.total_predictions ?? data?.total ?? 0;
+  const avgProbability = data?.avg_probability ?? data?.average_confidence ?? null;
+  const uniqueDiseases = data?.unique_diseases ?? data?.disease_count ?? 0;
+  const confBreakdown = data?.confidence_breakdown ?? data?.confidence_distribution ?? null;
+  const modeBreakdown = data?.mode_breakdown ?? data?.mode_distribution ?? null;
+  const topDiseases = data?.top_diseases ?? data?.most_common_diseases ?? [];
+
+  const confHigh = confBreakdown?.High ?? confBreakdown?.high ?? 0;
+  const confMed = confBreakdown?.Medium ?? confBreakdown?.medium ?? 0;
+  const confLow = confBreakdown?.Low ?? confBreakdown?.low ?? 0;
+  const confTotal = confHigh + confMed + confLow || 1;
+
+  const symptomOnly = modeBreakdown?.symptoms_only ?? modeBreakdown?.symptom_only ?? 0;
+  const fusion = modeBreakdown?.multimodal_fusion ?? modeBreakdown?.fusion ?? 0;
+  const modeTotal = symptomOnly + fusion || 1;
+
+  const hasUsageData = !loading && !err && totalPredictions > 0;
 
   return (
     <div style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Inter',sans-serif" }}>
       <style>{CSS(c)}</style>
-      <div className="dash-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 32px" }}>
+      <div className="dash-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 32px 80px" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 36 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`, padding: "4px 14px", borderRadius: 100, letterSpacing: 1.2, textTransform: "uppercase", display: "inline-block", marginBottom: 14 }}>Platform Metrics</span>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <h1 className="dash-h1" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 38, fontWeight: 800, margin: "0 0 8px", color: c.text, letterSpacing: -1 }}>Analytics Dashboard</h1>
-              <p style={{ color: c.sub, fontSize: 15, margin: 0 }}>Real-time performance metrics and model status.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 40 }}>
+          <div>
+            <span className="eyebrow" style={{ marginBottom: 16, display: "inline-flex" }}>System Analytics</span>
+            <h1 className="dash-h1" style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, margin: "16px 0 10px", color: c.text, letterSpacing: "-0.02em" }}>
+              Model &amp; Usage Dashboard
+            </h1>
+            <p style={{ color: c.sub, fontSize: 15, margin: 0, maxWidth: 560, lineHeight: 1.65 }}>
+              Live prediction statistics alongside fixed benchmark results from model evaluation on the ZebraMap test set.
+            </p>
+          </div>
+          <button className="refresh-btn" onClick={load} disabled={loading}>
+            {loading ? (
+              <span style={{ width: 13, height: 13, border: `2px solid ${c.border}`, borderTop: `2px solid ${c.teal}`, borderRadius: "50%", animation: "spin .7s linear infinite", display: "inline-block" }} />
+            ) : "↻"}
+            Refresh
+          </button>
+        </div>
+
+        {/* ── KPI ROW (live usage data) ─────────────────────────────── */}
+        <div className="kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: c.border, border: `1px solid ${c.border}`, marginBottom: 48 }}>
+          {[
+            { label: "Total Predictions", value: totalPredictions, color: "teal" },
+            { label: "Avg. Top Probability", value: avgProbability != null ? `${Math.round(avgProbability)}%` : "—", color: "blue" },
+            { label: "Unique Diseases Seen", value: uniqueDiseases, color: "purple" },
+            { label: "High Confidence Rate", value: confBreakdown ? `${Math.round((confHigh / confTotal) * 100)}%` : "—", color: "amber" },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="kpi-card">
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: c.muted, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px", fontWeight: 700 }}>{label}</p>
+              {loading ? <Skeleton w="60%" h={30} /> : (
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 30, fontWeight: 600, color: colorMap[color].text, margin: 0, letterSpacing: "-0.01em" }}>{value}</p>
+              )}
             </div>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 7,
-              background: apiStatus === "online" ? c.tealL : apiStatus === "offline" ? c.redL : c.cardAlt,
-              border: `1px solid ${apiStatus === "online" ? c.tealB : apiStatus === "offline" ? c.redB : c.border}`,
-              padding: "8px 16px", borderRadius: 100
-            }}>
-              <span style={{
-                width: 7, height: 7, borderRadius: "50%",
-                background: apiStatus === "online" ? c.teal : apiStatus === "offline" ? c.red : c.muted,
-                display: "inline-block", boxShadow: apiStatus === "online" ? `0 0 0 3px ${c.teal}30` : "none"
-              }} />
-              <span style={{
-                fontSize: 12, fontWeight: 700,
-                color: apiStatus === "online" ? c.teal : apiStatus === "offline" ? c.red : c.muted
-              }}>
-                {apiStatus === "checking" ? "Checking API…" : apiStatus === "online" ? "All systems operational" : "API unreachable · cached data"}
-              </span>
-            </div>
+          ))}
+        </div>
+
+        {err && (
+          <div style={{ background: c.redL, border: `1px solid ${c.redB}`, padding: "16px 20px", marginBottom: 40, display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 18 }}>⚠</span>
+            <p style={{ fontSize: 13.5, color: c.red, margin: 0, fontWeight: 500 }}>
+              Couldn't reach the analytics endpoint. Showing model benchmark data only.
+            </p>
+          </div>
+        )}
+
+        {!loading && !err && !hasUsageData && (
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, padding: "20px 24px", marginBottom: 40 }}>
+            <p style={{ fontSize: 13.5, color: c.sub, margin: 0, lineHeight: 1.6 }}>
+              No predictions have been logged yet — usage statistics will appear here once diagnoses start coming in.
+            </p>
+          </div>
+        )}
+
+        {/* ── SPLIT: confidence distribution + mode breakdown ─────────── */}
+        <div className="split-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 48 }}>
+
+          {/* Confidence distribution */}
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, borderTop: `2px solid ${c.teal}`, padding: 28 }}>
+            <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: c.text, margin: "0 0 20px" }}>Confidence Distribution</h3>
+            {loading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <Skeleton h={10} /><Skeleton h={10} /><Skeleton h={10} />
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {[
+                  { label: "High", val: confHigh, color: c.teal, bg: c.tealL },
+                  { label: "Medium", val: confMed, color: c.amber, bg: c.ambL },
+                  { label: "Low", val: confLow, color: c.red, bg: c.redL },
+                ].map(({ label, val, color }) => {
+                  const pct = Math.round((val / confTotal) * 100);
+                  return (
+                    <div key={label}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{label}</span>
+                        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color, fontWeight: 600 }}>{confBreakdown ? `${pct}%` : "—"}</span>
+                      </div>
+                      <div style={{ height: 6, background: c.border, borderRadius: 100, overflow: "hidden" }}>
+                        <div style={{ height: 6, width: confBreakdown ? `${pct}%` : "0%", background: color, borderRadius: 100, transition: "width .8s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Mode breakdown */}
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, borderTop: `2px solid ${c.blue}`, padding: 28 }}>
+            <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: c.text, margin: "0 0 20px" }}>Prediction Mode Split</h3>
+            {loading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <Skeleton h={10} /><Skeleton h={10} />
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {[
+                  { label: "Symptom-Only", val: symptomOnly, color: c.slate },
+                  { label: "Multimodal Fusion", val: fusion, color: c.purple },
+                ].map(({ label, val, color }) => {
+                  const pct = Math.round((val / modeTotal) * 100);
+                  return (
+                    <div key={label}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{label}</span>
+                        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color, fontWeight: 600 }}>{modeBreakdown ? `${pct}% · ${val}` : "—"}</span>
+                      </div>
+                      <div style={{ height: 6, background: c.border, borderRadius: 100, overflow: "hidden" }}>
+                        <div style={{ height: 6, width: modeBreakdown ? `${pct}%` : "0%", background: color, borderRadius: 100, transition: "width .8s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "100px 0", color: c.muted }}>
-            <div style={{ width: 48, height: 48, border: `3px solid ${c.border}`, borderTop: `3px solid ${c.teal}`, borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto 16px" }} />
-            <p style={{ margin: 0, fontWeight: 500, fontSize: 15 }}>Loading analytics…</p>
-          </div>
-        ) : (
-          <>
-            {/* Stat cards */}
-            <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 20 }}>
-              {[
-                { l: "Total Predictions", v: analytics?.total_predictions || "1,254", s: "All time", bg: c.tealL, col: c.teal, ic: "🔮" },
-                { l: "Top-3 Accuracy", v: "52.9%", s: "Symptoms model", bg: c.blueL, col: c.blue, ic: "🎯" },
-                { l: "Diseases Covered", v: "49", s: "Tier A", bg: c.purpL, col: c.purple, ic: "🧬" },
-                { l: "Training Images", v: "35K+", s: "Biomedical", bg: c.ambL, col: c.amber, ic: "🩻" },
-              ].map(({ l, v, s, bg, col, ic }) => (
-                <div key={l} className="stat-card" style={{ background: bg, borderRadius: 20, padding: "26px 24px", cursor: "default", transition: "all .2s", animation: "fadeUp .5s ease both" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
-                      <p style={{ fontSize: 10, color: col, opacity: .65, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 12px", fontWeight: 800 }}>{l}</p>
-                      <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 34, fontWeight: 800, color: col, margin: 0, letterSpacing: -.8 }}>{v}</p>
-                      {s && <p style={{ fontSize: 12, color: col, opacity: .6, margin: "6px 0 0", fontWeight: 500 }}>{s}</p>}
-                    </div>
-                    <span style={{ fontSize: 24 }}>{ic}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Chart row */}
-            <div className="chart-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 20 }}>
-              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, padding: 28, animation: "fadeUp .5s .1s ease both" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, flexWrap: "wrap", gap: 10 }}>
-                  <div>
-                    <h2 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, margin: "0 0 3px", color: c.text }}>Prediction Volume</h2>
-                    <p style={{ fontSize: 12, color: c.muted, margin: 0 }}>Predictions over time</p>
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    {Object.keys(RANGES).map(r => (
-                      <button key={r} className="range-btn" onClick={() => setRange(r)} style={{
-                        padding: "6px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, cursor: "pointer",
-                        fontFamily: "'Inter',sans-serif", transition: "all .15s",
-                        border: range === r ? `1.5px solid ${c.tealB}` : `1px solid ${c.borderI}`,
-                        background: range === r ? c.tealL : c.card,
-                        color: range === r ? c.teal : c.sub,
-                      }}>{r}</button>
-                    ))}
-                  </div>
-                </div>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={chartData} barSize={chartData.length > 5 ? 26 : 40}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={c.border} vertical={false} />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: c.muted, fontSize: 12 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: c.muted, fontSize: 12 }} />
-                    <Tooltip content={<Tip c={c} />} cursor={{ fill: `${c.teal}0A` }} />
-                    <Bar dataKey="v" radius={[8, 8, 0, 0]}>
-                      {chartData.map((_, i) => <Cell key={i} fill={i === peakIdx ? c.teal : `${c.teal}40`} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+        {/* ── TOP DISEASES ─────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 48 }}>
+          <span className="eyebrow" style={{ marginBottom: 18, display: "inline-flex" }}>Most Frequently Identified</span>
+          <div style={{ background: c.card, border: `1px solid ${c.border}`, marginTop: 18 }}>
+            {loading ? (
+              <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} h={16} />)}
               </div>
-
-              {/* Status */}
-              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, padding: 28, animation: "fadeUp .5s .15s ease both" }}>
-                <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, margin: "0 0 20px", color: c.text }}>Platform Status</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {[
-                    { label: "Backend API", status: apiStatus === "online" ? "Online" : apiStatus === "offline" ? "Offline" : "Checking", col: apiStatus === "online" ? c.teal : apiStatus === "offline" ? c.red : c.muted, bg: apiStatus === "online" ? c.tealL : apiStatus === "offline" ? c.redL : c.cardAlt, bc: apiStatus === "online" ? c.tealB : apiStatus === "offline" ? c.redB : c.border },
-                    { label: "Symptom Model", status: "Active", col: c.teal, bg: c.tealL, bc: c.tealB },
-                    { label: "Image Model", status: "Training", col: c.amber, bg: c.ambL, bc: c.ambB },
-                    { label: "Fusion Model", status: "Pending", col: c.muted, bg: c.cardAlt, bc: c.border },
-                  ].map(({ label, status, col, bg, bc }) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 14px", background: c.bgAlt, border: `1px solid ${c.border}`, borderRadius: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: col, display: "inline-block" }} />
-                        <span style={{ fontSize: 13, color: c.sub, fontWeight: 500 }}>{label}</span>
-                      </div>
-                      <span style={{ fontSize: 10, fontWeight: 800, padding: "4px 11px", borderRadius: 100, background: bg, color: col, border: `1px solid ${bc}`, textTransform: "uppercase", letterSpacing: .7 }}>{status}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${c.border}` }}>
-                  <p style={{ fontSize: 11, fontWeight: 800, color: c.muted, textTransform: "uppercase", letterSpacing: .8, margin: "0 0 12px" }}>Confidence Distribution</p>
-                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                    {pieData.map(({ name, value }, i) => {
-                      const col = [c.teal, c.amber, c.red][i];
-                      return (
-                        <div key={name} style={{ flex: 1 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 5 }}>
-                            <span style={{ color: c.sub, fontWeight: 500 }}>{name}</span>
-                            <span style={{ color: col, fontWeight: 800 }}>{value}%</span>
-                          </div>
-                          <div style={{ height: 4, background: c.border, borderRadius: 100 }}>
-                            <div style={{ height: 4, width: `${value}%`, background: col, borderRadius: 100, animation: "barGrow .9s ease" }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Second row: accuracy trend + model perf */}
-            <div className="perf-row" style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 20 }}>
-              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, padding: 28, animation: "fadeUp .5s .2s ease both" }}>
-                <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, margin: "0 0 4px", color: c.text }}>Accuracy Trend</h3>
-                <p style={{ fontSize: 12, color: c.muted, margin: "0 0 20px" }}>Top-3 accuracy over 4 weeks</p>
-                <ResponsiveContainer width="100%" height={160}>
-                  <LineChart data={lineData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={c.border} vertical={false} />
-                    <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: c.muted, fontSize: 11 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: c.muted, fontSize: 11 }} domain={[40, 56]} />
-                    <Tooltip content={<Tip c={c} />} />
-                    <Line type="monotone" dataKey="accuracy" stroke={c.teal} strokeWidth={2.5} dot={{ fill: c.teal, r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, padding: 28, animation: "fadeUp .5s .25s ease both" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                  <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, margin: 0, color: c.text }}>Model Performance</h3>
-                  <span style={{ fontSize: 12, color: c.muted, fontWeight: 500 }}>Last updated today</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  {[
-                    { l: "Symptom Model — Top-3 Accuracy (Exp 3)", p: 52.9, col: c.teal, bg: c.tealL, d: "TF-IDF + LR · 49 diseases" },
-                    { l: "Symptom Model — Exp 1 (5% data)", p: 40.3, col: c.purple, bg: c.purpL, d: "Scarcity sim · 514 samples" },
-                    { l: "Image Model — In Training", p: 35, col: c.blue, bg: c.blueL, d: "EfficientNet-B4 · 28,299 images" },
-                    { l: "Fusion Model — Not Yet Built", p: 0, col: c.amber, bg: c.ambL, d: "Cross-attention · Coming soon" },
-                  ].map(({ l, p, col, bg, d }) => (
-                    <div key={l}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                        <div>
-                          <p style={{ fontSize: 13, color: c.text, fontWeight: 700, margin: "0 0 2px" }}>{l}</p>
-                          <p style={{ fontSize: 11, color: c.muted, margin: 0 }}>{d}</p>
-                        </div>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: col, background: bg, padding: "4px 12px", borderRadius: 9, flexShrink: 0, marginLeft: 12, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>{p}%</span>
-                      </div>
-                      <div style={{ height: 7, background: c.border, borderRadius: 100, overflow: "hidden" }}>
-                        <div style={{ height: 7, width: `${p}%`, background: col, borderRadius: 100, animation: "barGrow 1.2s ease" }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Disease frequency leaderboard */}
-            <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, overflow: "hidden", animation: "fadeUp .5s .3s ease both" }}>
-              <div style={{ padding: "22px 28px", borderBottom: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-                <div>
-                  <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, margin: "0 0 3px", color: c.text }}>Most Predicted Diseases</h3>
-                  <p style={{ fontSize: 12, color: c.muted, margin: 0 }}>Frequency leaderboard, all time</p>
-                </div>
-                <span style={{ fontSize: 11, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`, padding: "4px 12px", borderRadius: 100, fontWeight: 700 }}>Top 6 of 49</span>
-              </div>
-              <div>
-                {LEADERBOARD.map(({ rank, disease, count, pct, trend }) => (
-                  <div key={rank} className="lb-row" style={{
-                    display: "grid", gridTemplateColumns: "44px 1fr 90px 70px", alignItems: "center",
-                    padding: "15px 28px", borderBottom: rank < LEADERBOARD.length ? `1px solid ${c.border}` : "none",
+            ) : topDiseases.length ? (
+              topDiseases.slice(0, 8).map((d, i) => {
+                const name = d.disease || d.name || "—";
+                const count = d.count ?? d.total ?? 0;
+                const maxCount = Math.max(...topDiseases.map(x => x.count ?? x.total ?? 0), 1);
+                const pct = Math.round((count / maxCount) * 100);
+                return (
+                  <div key={i} className="disease-row" style={{
+                    display: "flex", alignItems: "center", gap: 16, padding: "16px 24px",
+                    borderBottom: i < Math.min(topDiseases.length, 8) - 1 ? `1px solid ${c.border}` : "none",
                     transition: "background .12s",
                   }}>
-                    <span style={{
-                      width: 30, height: 30, borderRadius: 9,
-                      background: rank <= 3 ? c.tealL : c.cardAlt,
-                      border: `1px solid ${rank <= 3 ? c.tealB : c.border}`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 12, fontWeight: 800, color: rank <= 3 ? c.teal : c.sub,
-                    }}>{rank}</span>
-                    <div>
-                      <p style={{ fontSize: 14, color: c.text, fontWeight: 700, margin: "0 0 6px" }}>{disease}</p>
-                      <div style={{ height: 5, background: c.border, borderRadius: 100, maxWidth: 280 }}>
-                        <div style={{ height: 5, width: `${pct * 4}%`, maxWidth: "100%", background: c.teal, borderRadius: 100 }} />
+                    <span style={{ fontFamily: "'Fraunces',serif", fontStyle: "italic", fontWeight: 600, fontSize: 16, color: c.gold, width: 24, flexShrink: 0 }}>{i + 1}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13.5, fontWeight: 700, color: c.text, margin: "0 0 6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</p>
+                      <div style={{ height: 4, background: c.border, borderRadius: 100, maxWidth: 320 }}>
+                        <div style={{ height: 4, width: `${pct}%`, background: c.teal, borderRadius: 100 }} />
                       </div>
                     </div>
-                    <span style={{ fontSize: 13, color: c.sub, fontWeight: 600, textAlign: "right" }}>{count} cases</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: TREND_COLOR(trend), textAlign: "right" }}>
-                      {TREND_ICON[trend]} {pct}%
-                    </span>
+                    <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: c.muted, fontWeight: 600, flexShrink: 0 }}>{count}×</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+                );
+              })
+            ) : (
+              <p style={{ padding: "28px 24px", fontSize: 13.5, color: c.muted, margin: 0, fontStyle: "italic" }}>No disease frequency data available yet.</p>
+            )}
+          </div>
+        </div>
+
+        {/* ── MODEL BENCHMARKS (fixed evaluation results) ─────────────── */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 12 }}>
+            <span className="eyebrow">Model Benchmarks · ZebraMap Test Set</span>
+            <VitalLine color={c.teal} width={70} height={16} />
+          </div>
+
+          <div className="model-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+            {MODEL_BENCHMARKS.map(({ name, metric, value, color, note }, i) => {
+              const col = colorMap[color];
+              return (
+                <div key={i} className="model-row" style={{ padding: "22px 22px", borderTop: `2px solid ${col.text}` }}>
+                  <p style={{ fontSize: 10.5, fontWeight: 700, color: c.muted, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>{metric}</p>
+                  <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 30, fontWeight: 600, color: col.text, margin: "0 0 12px", letterSpacing: "-0.01em" }}>{value}%</p>
+                  <p style={{ fontFamily: "'Fraunces',serif", fontSize: 14.5, fontWeight: 600, color: c.text, margin: "0 0 8px" }}>{name}</p>
+                  <p style={{ fontSize: 12, color: c.muted, margin: 0, lineHeight: 1.6 }}>{note}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div style={{ marginTop: 40, padding: "14px 18px", background: c.ambL, border: `1px solid ${c.ambB}` }}>
+          <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.6 }}>
+            <strong>⚠ Research use only.</strong> Benchmark figures reflect offline evaluation on the ZebraMap test split and may not generalize to all populations.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
-
-export default Dashboard;

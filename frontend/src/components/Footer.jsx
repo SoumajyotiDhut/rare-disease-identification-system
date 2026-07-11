@@ -2,73 +2,102 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
-  .fl:hover { opacity:0.8 }
-  .fnl:hover { opacity:0.85 }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  .fl:hover  { opacity:.75!important }
+  .fnl:hover { color:#94A3B8!important }
+  .fi-btn:hover { border-color:rgba(203,175,116,0.45)!important }
   @media(max-width:768px){
-    .fg { grid-template-columns:1fr 1fr!important }
-    .fp { padding:48px 20px 24px!important }
-    .fb { flex-direction:column!important; gap:12px!important; text-align:center }
+    .fg  { grid-template-columns:1fr 1fr!important }
+    .fp  { padding:48px 24px 28px!important }
+    .fbot{ flex-direction:column!important; gap:14px!important; text-align:center }
   }
-  @media(max-width:480px){ .fg { grid-template-columns:1fr!important } }
+  @media(max-width:480px){
+    .fg { grid-template-columns:1fr!important; gap:36px!important }
+    .fp { padding:40px 20px 24px!important }
+    .flinks { justify-content:center!important; flex-wrap:wrap!important; gap:14px 20px!important }
+  }
 `;
 
-function Footer() {
-    const { c, dark } = useTheme();
-    // Footer always stays on the dark navy regardless of theme, for a consistent
-    // anchor — but in dark mode we shift it slightly to match the page tone.
-    const bg = dark ? c.footerBg : "#0F1C2E";
+export default function Footer() {
+    const { c } = useTheme();
 
     return (
-        <footer style={{ background: bg, fontFamily: "'Inter',sans-serif" }}>
+        <footer style={{ background: "#060D1A", fontFamily: "'Inter',sans-serif" }}>
             <style>{CSS}</style>
-            <div style={{ height: 3, background: `linear-gradient(90deg,${c.teal},${c.blue},${c.purple})` }} />
-            <div className="fp" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 32px 32px" }}>
-                <div className="fg" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: 48, marginBottom: 52, paddingBottom: 48, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+
+            {/* Top hairline */}
+            <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(203,175,116,0.5), transparent)" }} />
+
+            <div className="fp" style={{ maxWidth: 1200, margin: "0 auto", padding: "64px 32px 36px" }}>
+                <div className="fg" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 52, marginBottom: 56, paddingBottom: 48, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+
+                    {/* Brand */}
                     <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${c.teal},${c.blue})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff" }}>AI</div>
-                            <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 17, color: "#F8FAFC" }}>AI DOC</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 4, background: c.gradPrimary, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Fraunces',serif", fontStyle: "italic", fontWeight: 600, fontSize: 14, color: "#fff" }}>AI</div>
+                            <span style={{ fontFamily: "'Fraunces',serif", fontWeight: 600, fontSize: 18, color: "#F1F5F9", letterSpacing: "-0.02em" }}>AI DOC</span>
                         </div>
-                        <p style={{ fontSize: 14, color: "#7A94A8", lineHeight: 1.8, margin: "0 0 24px", maxWidth: 220 }}>AI-powered rare disease detection for clinical and research use worldwide.</p>
+                        <p style={{ fontSize: 13.5, color: "#64748B", lineHeight: 1.8, margin: "0 0 24px", maxWidth: 230 }}>
+                            AI-powered multimodal rare disease identification built on 36,487 real patient cases from ZebraMap.
+                        </p>
                         <div style={{ display: "flex", gap: 8 }}>
-                            {["🔬", "🧬", "🩺"].map((ic, i) => (
-                                <div key={i} style={{ width: 36, height: 36, borderRadius: 9, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: "pointer", transition: "background .15s" }}
-                                    onMouseEnter={e => e.currentTarget.style.background = `${c.teal}40`}
-                                    onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}>{ic}</div>
+                            {[{ ic: "🔬", label: "Research" }, { ic: "🧬", label: "AI" }, { ic: "🩺", label: "Clinical" }].map(({ ic, label }) => (
+                                <button key={label} className="fi-btn" title={label} style={{
+                                    width: 36, height: 36, borderRadius: 4,
+                                    background: "rgba(255,255,255,0.04)",
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: 16, cursor: "pointer", transition: "border-color .2s",
+                                }}>{ic}</button>
                             ))}
                         </div>
                     </div>
+
+                    {/* Platform links */}
                     <div>
-                        <p style={{ fontSize: 10, fontWeight: 800, color: "#5A7184", textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 18px" }}>Platform</p>
-                        {[{ to: "/predict", label: "Predict Disease" }, { to: "/dashboard", label: "Analytics" }, { to: "/history", label: "History" }, { to: "/", label: "Home" }].map(({ to, label }) => (
-                            <Link key={to} to={to} className="fnl" style={{ display: "block", fontSize: 14, color: "#7A94A8", textDecoration: "none", marginBottom: 11, fontWeight: 500, transition: "opacity .15s" }}>{label}</Link>
+                        <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, color: "#8A7B5C", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 18px" }}>Platform</p>
+                        {[{ to: "/predict", label: "Predict Disease" }, { to: "/dashboard", label: "Dashboard" }, { to: "/history", label: "History" }, { to: "/", label: "Home" }].map(({ to, label }) => (
+                            <Link key={to} to={to} className="fnl" style={{ display: "block", fontSize: 13.5, color: "#475569", textDecoration: "none", marginBottom: 12, fontWeight: 500, transition: "color .15s" }}>{label}</Link>
                         ))}
                     </div>
+
+                    {/* Models */}
                     <div>
-                        <p style={{ fontSize: 10, fontWeight: 800, color: "#5A7184", textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 18px" }}>Models</p>
-                        {[["Symptom Classifier", c.teal, "Active"], ["Image Detector", c.amber, "Active"], ["Fusion Model", c.purple, "Active"]].map(([n, col, s]) => (
-                            <div key={n} style={{ marginBottom: 13 }}>
-                                <p style={{ fontSize: 13, color: "#94A8BA", margin: "0 0 4px", fontWeight: 500 }}>{n}</p>
-                                <span style={{ fontSize: 10, fontWeight: 800, color: col, background: `${col}22`, border: `1px solid ${col}44`, padding: "2px 10px", borderRadius: 100, letterSpacing: .6, textTransform: "uppercase" }}>{s}</span>
+                        <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, color: "#8A7B5C", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 18px" }}>Models</p>
+                        {[
+                            { name: "TF-IDF + LR", status: "Active", color: c.teal },
+                            { name: "EfficientNet-B4", status: "Active", color: c.blue },
+                            { name: "Late Fusion", status: "Active", color: c.purple },
+                            { name: "FastGAN", status: "Research", color: c.amber },
+                        ].map(({ name, status, color }) => (
+                            <div key={name} style={{ marginBottom: 13 }}>
+                                <p style={{ fontSize: 13, color: "#475569", margin: "0 0 4px", fontWeight: 500 }}>{name}</p>
+                                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, fontWeight: 600, color, background: `${color}1A`, border: `1px solid ${color}44`, padding: "2px 9px", borderRadius: 100, letterSpacing: "0.06em", textTransform: "uppercase" }}>{status}</span>
                             </div>
                         ))}
                     </div>
+
+                    {/* Dataset */}
                     <div>
-                        <p style={{ fontSize: 10, fontWeight: 800, color: "#5A7184", textTransform: "uppercase", letterSpacing: 1.2, margin: "0 0 18px" }}>Dataset</p>
-                        <p style={{ fontSize: 13, color: "#94A8BA", margin: "0 0 8px", fontWeight: 500 }}>ZebraMap Dataset</p>
-                        <span style={{ fontSize: 10, fontWeight: 800, color: c.teal, background: `${c.teal}22`, border: `1px solid ${c.teal}44`, padding: "3px 11px", borderRadius: 100, letterSpacing: .6, display: "inline-block", marginBottom: 18 }}>CC BY 4.0</span>
-                        <div style={{ background: `${c.teal}15`, border: `1px solid ${c.teal}28`, borderRadius: 12, padding: "14px 16px" }}>
-                            <p style={{ fontSize: 11, color: c.teal, fontWeight: 700, margin: "0 0 3px" }}>36,374 patient cases</p>
-                            <p style={{ fontSize: 11, color: "#7A94A8", margin: 0 }}>1,374 rare diseases indexed</p>
+                        <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, color: "#8A7B5C", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 18px" }}>Dataset</p>
+                        <p style={{ fontSize: 13.5, color: "#475569", margin: "0 0 8px", fontWeight: 600 }}>ZebraMap</p>
+                        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, fontWeight: 600, color: c.teal, background: `${c.teal}1A`, border: `1px solid ${c.teal}44`, padding: "3px 10px", borderRadius: 100, display: "inline-block", marginBottom: 18, letterSpacing: "0.06em" }}>CC BY 4.0</span>
+                        <div style={{ background: "rgba(51,179,159,0.07)", border: "1px solid rgba(51,179,159,0.18)", borderRadius: 4, padding: "16px 18px" }}>
+                            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, color: c.teal, fontWeight: 600, margin: "0 0 6px" }}>36,487 patient cases</p>
+                            <p style={{ fontSize: 11.5, color: "#475569", margin: "0 0 4px" }}>1,374 rare diseases</p>
+                            <p style={{ fontSize: 11.5, color: "#475569", margin: 0 }}>94,384 biomedical images</p>
                         </div>
                     </div>
                 </div>
-                <div className="fb" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <p style={{ fontSize: 12, color: "#46627A", margin: 0 }}>© 2026 AI DOC · Rare Disease Detection System</p>
-                    <div style={{ display: "flex", gap: 22 }}>
-                        {["Privacy Policy", "Terms of Use", "Contact"].map(l => (
-                            <a key={l} href="#" className="fl" style={{ fontSize: 12, color: "#46627A", textDecoration: "none", transition: "opacity .15s" }}>{l}</a>
+
+                {/* Bottom */}
+                <div className="fbot" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p style={{ fontSize: 12, color: "#1E293B", margin: 0 }}>
+                        © 2026 AI DOC · Built for PROJ-IT781 · Techno Main Salt Lake, Kolkata
+                    </p>
+                    <div className="flinks" style={{ display: "flex", gap: 20 }}>
+                        {["Privacy", "Terms", "Contact"].map(l => (
+                            <a key={l} href="#" className="fl" style={{ fontSize: 12, color: "#1E293B", textDecoration: "none", transition: "opacity .15s" }}>{l}</a>
                         ))}
                     </div>
                 </div>
@@ -76,5 +105,3 @@ function Footer() {
         </footer>
     );
 }
-
-export default Footer;

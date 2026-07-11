@@ -6,13 +6,7 @@ export default function ProtectedRoute({ children }) {
     const { user, authLoading } = useAuth();
     const location = useLocation();
 
-    if (authLoading) {
-        return <Loader message="Checking your session…" />;
-    }
-
-    if (!user) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
-
+    if (authLoading) return <Loader message="Verifying your session…" />;
+    if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
     return children;
 }

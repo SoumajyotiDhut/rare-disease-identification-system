@@ -40,21 +40,21 @@ function ToastViewport({ toasts, remove }) {
     const { c } = useTheme();
     const ICONS = { success: "✓", error: "✕", warn: "⚠", info: "ℹ" };
     const COLORS = {
-        success: { bg: c.tealL, color: c.teal, border: c.tealB },
-        error: { bg: c.redL, color: c.red, border: c.redB },
-        warn: { bg: c.ambL, color: c.amber, border: c.ambB },
-        info: { bg: c.blueL, color: c.blue, border: c.blueB },
+        success: { color: c.teal, border: c.tealB },
+        error: { color: c.red, border: c.redB },
+        warn: { color: c.amber, border: c.ambB },
+        info: { color: c.blue, border: c.blueB },
     };
 
     return (
-        <div style={{
+        <div className="toast-viewport" style={{
             position: "fixed", top: 20, right: 20, zIndex: 9999,
             display: "flex", flexDirection: "column", gap: 10,
             maxWidth: "calc(100vw - 40px)", width: 360,
         }}>
             <style>{`
-        @keyframes toastIn  { from{opacity:0;transform:translateX(30px) scale(.95)} to{opacity:1;transform:translateX(0) scale(1)} }
-        @keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(30px)} }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap');
+        @keyframes toastIn  { from{opacity:0;transform:translateX(30px) scale(.97)} to{opacity:1;transform:translateX(0) scale(1)} }
         @media(max-width:600px){
           .toast-viewport { left:16px!important; right:16px!important; width:auto!important; top:auto!important; bottom:16px!important }
         }
@@ -63,15 +63,15 @@ function ToastViewport({ toasts, remove }) {
                 const s = COLORS[t.type] || COLORS.info;
                 return (
                     <div key={t.id} onClick={() => remove(t.id)} style={{
-                        background: c.card, border: `1.5px solid ${s.border}`, borderRadius: 14,
+                        background: c.card, border: `1px solid ${c.border}`, borderLeft: `2.5px solid ${s.color}`,
                         padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: 11,
-                        boxShadow: "0 12px 32px rgba(15,28,46,0.16)", cursor: "pointer",
+                        boxShadow: c.shadowLg, cursor: "pointer",
                         animation: "toastIn .25s ease",
                     }}>
                         <span style={{
-                            width: 24, height: 24, borderRadius: "50%", background: s.bg, color: s.color,
+                            width: 20, height: 20, borderRadius: "50%", color: s.color,
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 13, fontWeight: 800, flexShrink: 0,
+                            fontSize: 12, fontWeight: 800, flexShrink: 0, marginTop: 1,
                         }}>{ICONS[t.type]}</span>
                         <p style={{ fontSize: 13.5, color: c.text, margin: 0, lineHeight: 1.55, fontWeight: 500, flex: 1 }}>{t.message}</p>
                         <span style={{ fontSize: 13, color: c.muted, flexShrink: 0 }}>✕</span>

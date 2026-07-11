@@ -5,54 +5,135 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
 const CSS = (c) => `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
-  .nav-link:hover { color:${c.teal}!important; background:${c.tealL}!important }
-  .clock          { display:flex }
-  .desktop-nav    { display:flex }
-  .mobile-toggle  { display:none!important }
-  .mobile-menu    { display:none }
-  .auth-btn:hover { background:${c.tealL}!important }
-  @media(max-width:768px){
-    .clock         { display:none!important }
-    .desktop-nav   { display:none!important }
-    .mobile-toggle { display:flex!important }
-    .mobile-menu   { display:block }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  * { box-sizing: border-box; }
+
+  .nav-link {
+    position: relative; text-decoration: none;
+    padding: 7px 14px; font-size: 13.5px; font-weight: 500; color: ${c.sub};
+    transition: color .2s, background .2s; letter-spacing: 0.01em;
   }
+  .nav-link:hover { color: ${c.text} !important; background: ${c.cardAlt} !important; }
+  .nav-link.active { color: ${c.teal} !important; font-weight: 700; }
+  .nav-link.active::after {
+    content:''; position:absolute; bottom:-1px; left:14px; right:14px;
+    height:2px; background:${c.teal};
+  }
+
+  .theme-btn {
+    width:36px; height:36px; border-radius:4px;
+    border:1px solid ${c.border}; background:${c.cardAlt}; color:${c.sub};
+    cursor:pointer; font-size:15px; display:flex; align-items:center;
+    justify-content:center; transition:all .2s; flex-shrink:0;
+  }
+  .theme-btn:hover { border-color:${c.borderI}; }
+
+  .auth-outline {
+    padding:8px 16px; border-radius:4px; border:1px solid ${c.border};
+    background:transparent; color:${c.sub}; text-decoration:none;
+    font-size:13.5px; font-weight:600; cursor:pointer;
+    transition:all .2s; font-family:'Inter',sans-serif;
+  }
+  .auth-outline:hover { border-color:${c.teal}; color:${c.teal}; background:${c.tealL}; }
+
+  .auth-fill {
+    padding:8px 18px; border-radius:4px; border:none;
+    background:${c.text}; color:${c.bg}; text-decoration:none;
+    font-size:13.5px; font-weight:600; cursor:pointer;
+    transition:all .2s; font-family:'Inter',sans-serif;
+  }
+  .auth-fill:hover { background:${c.teal}; color:#fff; }
+
+  .logout-btn {
+    padding:7px 14px; border-radius:4px;
+    border:1px solid ${c.border}; background:transparent;
+    color:${c.sub}; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all .2s; font-family:'Inter',sans-serif;
+  }
+  .logout-btn:hover { border-color:${c.redB}; color:${c.red}; background:${c.redL}; }
+
+  .avatar-ring {
+    width:32px; height:32px; border-radius:4px;
+    background:${c.gradPrimary}; display:flex; align-items:center;
+    justify-content:center; font-size:12px; font-weight:700; color:#fff;
+    flex-shrink:0; font-family:'Fraunces',serif;
+  }
+
+  .mobile-toggle {
+    display:none !important; flex-direction:column; gap:5px;
+    padding:9px; border:1px solid ${c.border}; background:${c.cardAlt};
+    border-radius:4px; cursor:pointer; transition:all .2s;
+  }
+  .mobile-toggle span {
+    width:20px; height:2px; background:${c.sub}; border-radius:2px;
+    display:block; transition:all .25s cubic-bezier(.4,0,.2,1);
+  }
+
+  .mobile-nav-link {
+    display:flex; align-items:center; gap:10px; padding:11px 14px;
+    border-radius:4px; font-size:15px; font-weight:500;
+    text-decoration:none; transition:all .15s; margin-bottom:3px;
+  }
+  .mobile-nav-link:hover { background:${c.cardAlt} !important; }
+
+  @media(max-width:768px){
+    .clock-pill  { display:none !important }
+    .desktop-nav { display:none !important }
+    .mobile-toggle { display:flex !important }
+  }
+  @media(max-width:380px){
+    .logo-sub { display:none !important }
+  }
+
+  @keyframes mobileSlide {
+    from { opacity:0; transform:translateY(-8px) }
+    to   { opacity:1; transform:translateY(0) }
+  }
+  .mobile-menu-open { animation: mobileSlide .2s ease both }
 `;
 
-function Navbar() {
+const NAV_LINKS = [
+  { path: "/", label: "Home" },
+  { path: "/predict", label: "Predict" },
+  { path: "/dashboard", label: "Dashboard" },
+  { path: "/history", label: "History" },
+];
+
+export default function Navbar() {
   const { dark, setDark, c } = useTheme();
   const { user, authLoading, logout } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [time, setTime] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const location = useLocation();
 
   useEffect(() => {
-    const t = setInterval(() => setTime(new Date().toLocaleTimeString("en-IN")), 1000);
+    const t = setInterval(
+      () => setTime(new Date().toLocaleTimeString("en-IN",
+        { hour: "2-digit", minute: "2-digit", second: "2-digit" })),
+      1000
+    );
     return () => clearInterval(t);
   }, []);
+
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn);
+    const fn = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
   useEffect(() => setOpen(false), [location]);
 
-  const isActive = p => location.pathname === p;
-  const links = [
-    { path: "/", label: "Home" },
-    { path: "/predict", label: "Predict" },
-    { path: "/dashboard", label: "Dashboard" },
-    { path: "/history", label: "History" },
-  ];
+  const isActive = (p) =>
+    p === "/" ? location.pathname === "/" : location.pathname.startsWith(p);
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success("Signed out.");
+      toast.success("Signed out successfully.");
       navigate("/");
     } catch {
       toast.error("Couldn't sign out. Try again.");
@@ -60,164 +141,156 @@ function Navbar() {
   };
 
   const initials = (user?.displayName || user?.email || "?")
-    .trim()
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+    .trim().split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
 
   return (
     <>
       <style>{CSS(c)}</style>
+
       <header style={{
         position: "sticky", top: 0, zIndex: 300,
-        background: scrolled ? `${c.navBg}F7` : c.navBg,
-        backdropFilter: "blur(20px)",
-        borderBottom: `1px solid ${c.border}`,
-        boxShadow: scrolled ? "0 1px 24px rgba(0,0,0,0.12)" : "none",
-        transition: "background .25s, box-shadow .3s, border-color .25s",
+        background: scrolled ? c.glass : "transparent",
+        backdropFilter: scrolled ? c.glassBlur : "none",
+        WebkitBackdropFilter: scrolled ? c.glassBlur : "none",
+        borderBottom: scrolled ? `1px solid ${c.glassBorder}` : "1px solid transparent",
+        transition: "all .3s ease",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px" }}>
+        <div style={{
+          maxWidth: 1200, margin: "0 auto", height: 64,
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between", padding: "0 24px", gap: 16,
+        }}>
 
           {/* Logo */}
-          <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${c.teal},${c.blue})`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff", boxShadow: `0 4px 12px ${c.teal}40` }}>AI</div>
+          <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 4, background: c.gradPrimary,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "'Fraunces',serif", fontStyle: "italic", fontWeight: 600, fontSize: 13, color: "#fff",
+            }}>AI</div>
             <div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 16, color: c.text, letterSpacing: -.3 }}>AI DOC</div>
-              <div style={{ fontSize: 9, color: c.teal, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>Rare Disease Assistant</div>
+              <div style={{
+                fontFamily: "'Fraunces',serif", fontWeight: 600,
+                fontSize: 15.5, color: c.text, letterSpacing: "-0.02em", lineHeight: 1.2,
+              }}>AI DOC</div>
+              <div className="logo-sub" style={{
+                fontFamily: "'IBM Plex Mono',monospace",
+                fontSize: 8.5, color: c.gold, letterSpacing: "0.1em",
+                textTransform: "uppercase", fontWeight: 600, lineHeight: 1,
+              }}>Rare Disease Assistant</div>
             </div>
           </Link>
 
           {/* Clock */}
-          <div className="clock" style={{ fontFamily: "monospace", fontSize: 12, color: c.subAlt, background: c.cardAlt, border: `1px solid ${c.border}`, padding: "5px 12px", borderRadius: 8, letterSpacing: 1, fontWeight: 500 }}>{time}</div>
+          <div className="clock-pill" style={{
+            fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: c.subAlt,
+            background: c.cardAlt, border: `1px solid ${c.border}`,
+            padding: "5px 13px", borderRadius: 4, letterSpacing: "0.06em", fontWeight: 500,
+          }}>{time}</div>
 
-          {/* Desktop nav */}
-          <nav className="desktop-nav" style={{ alignItems: "center", gap: 2 }}>
-            {links.map(({ path, label }) => (
-              <Link key={path} to={path} className="nav-link" style={{
-                textDecoration: "none", padding: "8px 15px", borderRadius: 9, fontSize: 14,
-                fontWeight: isActive(path) ? 700 : 500,
-                color: isActive(path) ? c.teal : c.sub,
-                background: isActive(path) ? c.tealL : "transparent",
-                border: isActive(path) ? `1px solid ${c.tealB}` : "1px solid transparent",
-                transition: "all .15s",
-              }}>{label}</Link>
+          {/* Desktop Nav */}
+          <nav className="desktop-nav" style={{
+            display: "flex", alignItems: "center", gap: 2,
+            flex: 1, justifyContent: "center",
+          }}>
+            {NAV_LINKS.map(({ path, label }) => (
+              <Link key={path} to={path}
+                className={`nav-link${isActive(path) ? " active" : ""}`}>
+                {label}
+              </Link>
             ))}
+          </nav>
 
-            <button onClick={() => setDark(!dark)} aria-label="Toggle dark mode" style={{
-              marginLeft: 8, padding: "7px 13px", borderRadius: 9,
-              border: `1px solid ${c.border}`, background: c.cardAlt,
-              color: c.sub, cursor: "pointer", fontSize: 15, transition: "all .15s",
-            }}>
+          {/* Right controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <button className="theme-btn" onClick={() => setDark(!dark)} aria-label="Toggle theme">
               {dark ? "☀️" : "🌙"}
             </button>
 
-            {/* Auth area */}
             {!authLoading && (
               user ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
-                  <div title={user.email} style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    background: `linear-gradient(135deg,${c.teal},${c.blue})`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 12, fontWeight: 800, color: "#fff",
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: c.cardAlt, border: `1px solid ${c.border}`,
+                    borderRadius: 4, padding: "5px 12px 5px 6px",
                   }}>
-                    {initials}
+                    <div className="avatar-ring">{initials}</div>
+                    <span style={{
+                      fontSize: 13, fontWeight: 600, color: c.text,
+                      maxWidth: 100, overflow: "hidden",
+                      textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>{displayName}</span>
                   </div>
-                  <button onClick={handleLogout} className="auth-btn" style={{
-                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
-                    background: "transparent", color: c.sub, cursor: "pointer", fontSize: 13.5,
-                    fontWeight: 700, transition: "all .15s",
-                  }}>
-                    Log out
-                  </button>
+                  <button className="logout-btn" onClick={handleLogout}>Sign out</button>
                 </div>
               ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
-                  <Link to="/login" className="auth-btn" style={{
-                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
-                    background: "transparent", color: c.sub, textDecoration: "none",
-                    fontSize: 13.5, fontWeight: 700, transition: "all .15s",
-                  }}>
-                    Sign In
-                  </Link>
-                  <Link to="/signup" style={{
-                    padding: "7px 16px", borderRadius: 9, border: "none",
-                    background: `linear-gradient(135deg,${c.teal},${c.blue})`, color: "#fff",
-                    textDecoration: "none", fontSize: 13.5, fontWeight: 700,
-                    boxShadow: `0 4px 12px ${c.teal}40`,
-                  }}>
-                    Sign Up
-                  </Link>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Link to="/login" className="auth-outline">Sign In</Link>
+                  <Link to="/signup" className="auth-fill">Get Started</Link>
                 </div>
               )
             )}
-          </nav>
+          </div>
 
           {/* Mobile hamburger */}
-          <button className="mobile-toggle" onClick={() => setOpen(!open)} style={{
-            flexDirection: "column", gap: 5, padding: "8px", border: `1px solid ${c.border}`,
-            background: c.cardAlt, borderRadius: 9, cursor: "pointer",
-          }}>
-            {[0, 1, 2].map(i => (
-              <span key={i} style={{
-                width: 20, height: 2, background: c.sub, borderRadius: 2, display: "block",
-                transform: open && i === 0 ? "rotate(45deg) translate(5px,5px)" : open && i === 2 ? "rotate(-45deg) translate(5px,-5px)" : "none",
-                opacity: open && i === 1 ? 0 : 1, transition: "all .2s",
-              }} />
-            ))}
+          <button className="mobile-toggle" onClick={() => setOpen(!open)}>
+            <span style={{ transform: open ? "rotate(45deg) translate(5px,5px)" : "none" }} />
+            <span style={{ opacity: open ? 0 : 1 }} />
+            <span style={{ transform: open ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
           </button>
         </div>
 
-        {/* Mobile dropdown */}
+        {/* Mobile menu */}
         {open && (
-          <div className="mobile-menu" style={{ background: c.navBg, borderTop: `1px solid ${c.border}`, padding: "12px 20px 20px" }}>
-            {links.map(({ path, label }) => (
-              <Link key={path} to={path} style={{
-                display: "block", padding: "12px 16px", borderRadius: 10, fontSize: 15,
-                fontWeight: isActive(path) ? 700 : 500, color: isActive(path) ? c.teal : c.text,
-                background: isActive(path) ? c.tealL : "transparent", textDecoration: "none",
-                marginBottom: 4, transition: "all .15s",
-              }}>{label}</Link>
+          <div className="mobile-menu-open" style={{
+            background: c.glass, backdropFilter: c.glassBlur,
+            WebkitBackdropFilter: c.glassBlur,
+            borderTop: `1px solid ${c.glassBorder}`,
+            padding: "12px 16px 20px",
+          }}>
+            {NAV_LINKS.map(({ path, label }) => (
+              <Link key={path} to={path} className="mobile-nav-link" style={{
+                color: isActive(path) ? c.teal : c.text,
+                background: isActive(path) ? c.tealL : "transparent",
+                fontWeight: isActive(path) ? 700 : 500,
+              }}>
+                {label}
+              </Link>
             ))}
 
-            {!authLoading && (
-              user ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px" }}>
-                  <span style={{ fontSize: 13.5, color: c.text, fontWeight: 600 }}>
-                    {user.displayName || user.email}
-                  </span>
-                  <button onClick={handleLogout} style={{
-                    padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`,
-                    background: "transparent", color: c.sub, cursor: "pointer", fontSize: 13, fontWeight: 700,
-                  }}>
-                    Log out
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "flex", gap: 8, padding: "8px 16px 0" }}>
-                  <Link to="/login" style={{
-                    flex: 1, textAlign: "center", padding: "10px 14px", borderRadius: 9,
-                    border: `1px solid ${c.border}`, color: c.text, textDecoration: "none",
-                    fontSize: 14, fontWeight: 700,
-                  }}>
-                    Sign In
-                  </Link>
-                  <Link to="/signup" style={{
-                    flex: 1, textAlign: "center", padding: "10px 14px", borderRadius: 9,
-                    border: "none", background: `linear-gradient(135deg,${c.teal},${c.blue})`,
-                    color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 700,
-                  }}>
-                    Sign Up
-                  </Link>
-                </div>
-              )
-            )}
+            <div style={{ marginTop: 12, paddingTop: 14, borderTop: `1px solid ${c.border}` }}>
+              {!authLoading && (
+                user ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div className="avatar-ring">{initials}</div>
+                      <div>
+                        <p style={{ fontSize: 13.5, color: c.text, fontWeight: 700, margin: 0 }}>{displayName}</p>
+                        <p style={{ fontSize: 11, color: c.muted, margin: 0 }}>{user.email}</p>
+                      </div>
+                    </div>
+                    <button className="logout-btn" onClick={handleLogout}>Sign out</button>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Link to="/login" className="auth-outline" style={{ flex: 1, textAlign: "center" }}>Sign In</Link>
+                    <Link to="/signup" className="auth-fill" style={{ flex: 1, textAlign: "center" }}>Get Started</Link>
+                  </div>
+                )
+              )}
+            </div>
 
-            <div style={{ marginTop: 10, paddingTop: 14, borderTop: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: c.muted, fontFamily: "monospace" }}>{time}</span>
-              <button onClick={() => setDark(!dark)} style={{ padding: "7px 14px", borderRadius: 9, border: `1px solid ${c.border}`, background: c.cardAlt, color: c.sub, cursor: "pointer", fontSize: 15 }}>{dark ? "☀️" : "🌙"}</button>
+            <div style={{
+              marginTop: 12, paddingTop: 12, borderTop: `1px solid ${c.border}`,
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+            }}>
+              <span style={{ fontSize: 11.5, color: c.muted, fontFamily: "'IBM Plex Mono',monospace", letterSpacing: "0.05em" }}>
+                {time}
+              </span>
+              <button className="theme-btn" onClick={() => setDark(!dark)}>{dark ? "☀️" : "🌙"}</button>
             </div>
           </div>
         )}
@@ -225,5 +298,3 @@ function Navbar() {
     </>
   );
 }
-
-export default Navbar;

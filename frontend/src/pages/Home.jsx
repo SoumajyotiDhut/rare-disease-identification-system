@@ -1,398 +1,433 @@
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
+import { getAnalytics } from "../services/Api";
 
 const CSS = (c) => `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
-  @keyframes ping      { 0%{transform:scale(1);opacity:.5} 70%{transform:scale(2.2);opacity:0} 100%{transform:scale(1);opacity:0} }
-  @keyframes fadeUp    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes slideIn   { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
-  @keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  @keyframes barGrow   { from{width:0} }
-  @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-  @keyframes countUp   { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-  .hero-cta-p:hover  { background:${c.tealDark}!important; box-shadow:0 14px 36px ${c.teal}45!important; transform:translateY(-2px) }
-  .hero-cta-s:hover  { border-color:${c.faint}!important; background:${c.cardAlt}!important }
-  .feature-card:hover { box-shadow:0 14px 44px ${c.teal}18!important; transform:translateY(-5px)!important; border-color:${c.tealB}!important }
-  .stat-card:hover   { transform:translateY(-3px)!important; box-shadow:0 10px 30px rgba(0,0,0,0.12)!important }
-  .testimonial:hover { box-shadow:0 8px 28px rgba(0,0,0,0.12)!important }
-  .faq-item:hover    { border-color:${c.tealB}!important }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+  @keyframes pulse    { 0%,100%{opacity:.45;transform:scale(1)} 50%{opacity:.9;transform:scale(1.03)} }
+  @keyframes drawLine { from{stroke-dashoffset:600} to{stroke-dashoffset:0} }
 
-  @media(max-width:1024px) {
-    .hero-grid      { grid-template-columns:1fr!important }
-    .hero-preview   { display:none!important }
-    .features-grid  { grid-template-columns:1fr 1fr!important }
-    .steps-grid     { grid-template-columns:1fr!important; gap:12px!important }
-    .step-seg       { border-left:1px solid ${c.border}!important; border-radius:16px!important }
-    .test-grid      { grid-template-columns:1fr 1fr!important }
-    .faq-grid       { grid-template-columns:1fr!important }
+  .eyebrow {
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    color:${c.gold}; letter-spacing:0.16em; text-transform:uppercase;
   }
-  @media(max-width:640px) {
-    .hero-h1        { font-size:38px!important; letter-spacing:-1px!important }
-    .hero-sub       { font-size:15px!important }
-    .hero-btns      { flex-direction:column!important }
-    .hero-btns button { width:100%!important }
-    .trust-row      { gap:20px!important }
-    .section-pad    { padding:60px 20px!important }
-    .features-grid  { grid-template-columns:1fr!important }
-    .test-grid      { grid-template-columns:1fr!important }
-    .section-title  { font-size:30px!important }
-    .cta-banner-btns{ flex-direction:column!important; align-items:stretch!important }
-    .stats-row      { grid-template-columns:1fr 1fr!important }
+  .eyebrow::before { content:''; width:22px; height:1px; background:${c.gold}; display:inline-block; }
+
+  .hero-cta-primary {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:16px 30px; border-radius:4px; border:none;
+    background:${c.text}; color:${c.bg};
+    font-size:14.5px; font-weight:600; cursor:pointer;
+    text-decoration:none; font-family:'Inter',sans-serif;
+    transition:all .25s cubic-bezier(.2,.7,.3,1); letter-spacing:0.01em;
+  }
+  .hero-cta-primary:hover { background:${c.teal}; color:#fff; transform:translateY(-2px); box-shadow:${c.shadowTeal}; }
+
+  .hero-cta-outline {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:15px 26px; border-radius:4px;
+    border:1px solid ${c.borderI}; background:transparent; color:${c.text};
+    font-size:14px; font-weight:600; cursor:pointer;
+    text-decoration:none; font-family:'Inter',sans-serif;
+    transition:all .25s;
+  }
+  .hero-cta-outline:hover { border-color:${c.teal}; color:${c.teal}; }
+
+  .stat-card {
+    background:${c.card}; border:1px solid ${c.border}; border-top:2px solid transparent;
+    padding:30px 26px; transition:transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .stat-card:hover { transform:translateY(-3px); box-shadow:${c.shadowLg}; border-top-color:${c.gold}; }
+
+  .feature-card {
+    background:${c.card}; border:1px solid ${c.border};
+    padding:34px 30px; transition:transform .2s, box-shadow .2s, border-color .2s;
+    position:relative;
+  }
+  .feature-card:hover { transform:translateY(-4px); box-shadow:${c.shadowLg}; border-color:${c.tealB}; }
+
+  .step-card { padding:30px 4px 0; position:relative; }
+  .step-num {
+    font-family:'Fraunces',serif; font-style:italic; font-weight:500;
+    font-size:15px; color:${c.gold};
+  }
+
+  .blob { position:absolute; border-radius:50%; pointer-events:none; }
+
+  .cta-link-light {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:15px 30px; border-radius:4px; border:none;
+    background:${c.bg}; color:${c.teal}; font-size:14.5px; font-weight:700;
+    text-decoration:none; transition:all .25s; font-family:'Inter',sans-serif;
+  }
+  .cta-link-light:hover { transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,0.25); }
+
+  .cta-link-ghost {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:14px 26px; border-radius:4px;
+    border:1px solid rgba(255,255,255,0.35);
+    background:transparent; color:#fff; font-size:14px; font-weight:600;
+    text-decoration:none; transition:all .25s; font-family:'Inter',sans-serif;
+  }
+  .cta-link-ghost:hover { background:rgba(255,255,255,0.10); }
+
+  @media(max-width:900px){
+    .hero-grid   { grid-template-columns:1fr!important }
+    .stats-grid  { grid-template-columns:1fr 1fr!important }
+    .feat-grid   { grid-template-columns:1fr!important }
+    .steps-grid  { grid-template-columns:1fr 1fr!important; gap:36px!important }
+    .hero-visual { display:none!important }
+  }
+  @media(max-width:600px){
+    .stats-grid  { grid-template-columns:1fr!important }
+    .steps-grid  { grid-template-columns:1fr!important }
+    .hero-title  { font-size:34px!important }
+    .section-pad { padding:56px 18px!important }
+    .hero-cta-row { flex-direction:column!important; align-items:stretch!important }
+    .hero-cta-primary, .hero-cta-outline { width:100%!important; justify-content:center!important; padding:15px 20px!important }
+    .mini-stats  { gap:22px!important }
+    .cta-banner-pad { padding:44px 26px!important }
+    .cta-link-row { flex-direction:column!important; align-items:stretch!important }
+    .cta-link-light, .cta-link-ghost { width:100%!important; justify-content:center!important }
+  }
+  @media(max-width:420px){
+    .hero-title    { font-size:29px!important }
+    .stat-card     { padding:22px 18px!important }
+    .feature-card  { padding:26px 20px!important }
+    .step-card     { padding-top:14px!important }
   }
 `;
 
-const LiveDot = ({ color }) => (
-  <span style={{ position: "relative", display: "inline-block", width: 8, height: 8, flexShrink: 0 }}>
-    <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: color, animation: "ping 1.6s ease infinite", opacity: .5 }} />
-    <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: color }} />
-  </span>
-);
+const STATS = [
+  { val: "36,487", label: "Patient Cases", sub: "ZebraMap dataset" },
+  { val: "1,374", label: "Rare Diseases", sub: "ORPHA coded" },
+  { val: "83.87%", label: "Top-5 Accuracy", sub: "Fusion model" },
+  { val: "8,948", label: "Synthetic Images", sub: "FastGAN generated" },
+];
 
-const Eyebrow = ({ children, c }) => (
-  <span style={{
-    fontSize: 10, fontWeight: 800, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`,
-    padding: "4px 14px", borderRadius: 100, letterSpacing: 1.2, textTransform: "uppercase",
-    display: "inline-block", marginBottom: 18
-  }}>{children}</span>
-);
+const FEATURES = [
+  {
+    mark: "01", title: "Symptom Analysis",
+    desc: "Enter free-text symptoms and our TF-IDF + Logistic Regression classifier maps them to 62 rare diseases with probability scores.",
+    color: "teal", badge: "34.73% Top-1",
+  },
+  {
+    mark: "02", title: "Image Recognition",
+    desc: "Upload MRI, CT, fundus, dermoscopy, or histopathology scans. EfficientNet-B4 fine-tuned on 35,000+ biomedical images.",
+    color: "blue", badge: "EfficientNet-B4",
+  },
+  {
+    mark: "03", title: "Multimodal Fusion",
+    desc: "Late-weighted fusion combines both signals at optimal 0.9/0.1 weights, boosting Top-1 accuracy to 58.39% — a +23.66% improvement.",
+    color: "purple", badge: "58.39% Top-1",
+  },
+  {
+    mark: "04", title: "GAN Augmentation",
+    desc: "FastGAN generates synthetic rare disease images for ultra-rare classes, achieving 87.97% accuracy — beating the full-data upper bound.",
+    color: "amber", badge: "87.97% Acc.",
+  },
+];
 
-const FeatureCard = ({ icon, tag, tagColor, tagBg, tagBorder, title, desc, delay, c }) => (
-  <div className="feature-card" style={{
-    background: c.card, border: `1px solid ${c.border}`, borderRadius: 22,
-    padding: "32px 28px", transition: "all .25s", cursor: "default",
-    animation: `fadeUp .6s ${delay}s ease both`
-  }}>
-    <div style={{
-      width: 54, height: 54, borderRadius: 15, background: c.tealL, display: "flex",
-      alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 18
-    }}>{icon}</div>
-    <span style={{
-      fontSize: 10, fontWeight: 800, color: tagColor, background: tagBg, border: `1px solid ${tagBorder}`,
-      padding: "3px 10px", borderRadius: 100, letterSpacing: 1, textTransform: "uppercase",
-      display: "inline-block", marginBottom: 14
-    }}>{tag}</span>
-    <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 17, fontWeight: 700, color: c.text, margin: "0 0 10px" }}>{title}</h3>
-    <p style={{ fontSize: 14, color: c.sub, lineHeight: 1.8, margin: 0 }}>{desc}</p>
-  </div>
-);
+const STEPS = [
+  { n: "I", title: "Describe Symptoms", desc: "Type patient symptoms in natural language. Quick-add chips help you select common presentations fast." },
+  { n: "II", title: "Upload Medical Scan", desc: "Optionally upload any biomedical image — MRI, CT, dermoscopy, fundus or histopathology scan." },
+  { n: "III", title: "AI Analyses Input", desc: "Models run in parallel: TF-IDF+LR for symptoms, EfficientNet-B4 for images, then fused at 0.9/0.1 weights." },
+  { n: "IV", title: "Review Diagnoses", desc: "Ranked top-5 differential diagnoses appear with probability scores, confidence levels, and disease details." },
+];
 
-const TestimonialCard = ({ quote, name, role, initials, color, delay, c }) => (
-  <div className="testimonial" style={{
-    background: c.card, border: `1px solid ${c.border}`, borderRadius: 22, padding: "28px",
-    transition: "box-shadow .2s", animation: `fadeUp .6s ${delay}s ease both`
-  }}>
-    <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
-      {[1, 2, 3, 4, 5].map(i => <span key={i} style={{ color: "#F5A623", fontSize: 14 }}>★</span>)}
-    </div>
-    <p style={{ fontSize: 14, color: c.sub, lineHeight: 1.85, margin: "0 0 22px", fontStyle: "italic" }}>"{quote}"</p>
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <div style={{
-        width: 40, height: 40, borderRadius: "50%", background: color, display: "flex",
-        alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0
-      }}>{initials}</div>
-      <div>
-        <p style={{ fontSize: 13, fontWeight: 700, color: c.text, margin: "0 0 1px" }}>{name}</p>
-        <p style={{ fontSize: 12, color: c.muted, margin: 0 }}>{role}</p>
-      </div>
-    </div>
-  </div>
-);
-
-const FaqItem = ({ q, a, c }) => {
-  const [open, setOpen] = useState(false);
+/** Thin "vital sign" line — the page's recurring signature mark */
+function VitalLine({ color, width = 160, height = 28 }) {
   return (
-    <div className="faq-item" onClick={() => setOpen(!open)} style={{
-      background: c.card, border: `1px solid ${c.border}`, borderRadius: 16, padding: "20px 24px",
-      cursor: "pointer", transition: "border-color .2s, box-shadow .2s",
-      boxShadow: open ? "0 4px 20px rgba(0,0,0,0.08)" : "none",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <p style={{ fontSize: 15, fontWeight: 700, color: c.text, margin: 0, paddingRight: 16 }}>{q}</p>
-        <span style={{
-          fontSize: 18, color: c.teal, flexShrink: 0, transition: "transform .2s",
-          transform: open ? "rotate(45deg)" : "none"
-        }}>+</span>
-      </div>
-      {open && <p style={{ fontSize: 14, color: c.sub, lineHeight: 1.75, margin: "14px 0 0", animation: "fadeUp .25s ease" }}>{a}</p>}
-    </div>
+    <svg width={width} height={height} viewBox="0 0 160 28" fill="none" style={{ display: "block" }}>
+      <path
+        d="M0 14H40L48 4L58 24L66 14H160"
+        stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+        strokeDasharray="600" style={{ animation: "drawLine 1.4s ease forwards" }}
+      />
+    </svg>
   );
-};
+}
 
-const Counter = ({ target }) => {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    const num = parseInt(target.replace(/\D/g, ""));
-    let start = 0;
-    const step = Math.ceil(num / 40);
-    const t = setInterval(() => {
-      start += step;
-      if (start >= num) { setVal(num); clearInterval(t); } else setVal(start);
-    }, 30);
-    return () => clearInterval(t);
-  }, []);
-  return <>{target.replace(/\d+/, val.toLocaleString())}</>;
-};
-
-function Home() {
-  const navigate = useNavigate();
+export default function Home() {
   const { c } = useTheme();
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState(null);
+
+  useEffect(() => {
+    getAnalytics().then(setAnalytics).catch(() => { });
+  }, []);
+
+  const colorMap = {
+    teal: { text: c.teal, bg: c.tealL, border: c.tealB },
+    blue: { text: c.blue, bg: c.blueL, border: c.blueB },
+    purple: { text: c.purple, bg: c.purpL, border: c.purpB },
+    amber: { text: c.amber, bg: c.ambL, border: c.ambB },
+  };
 
   return (
-    <div style={{ minHeight: "100vh", background: c.bg, color: c.text, fontFamily: "'Inter',sans-serif" }}>
+    <div style={{ background: c.bg, fontFamily: "'Inter',sans-serif" }}>
       <style>{CSS(c)}</style>
 
-      {/* ══ HERO ══ */}
-      <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 32px 80px" }}>
-        <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{
+        padding: "96px 32px 100px", position: "relative", overflow: "hidden",
+        background: c.gradHero,
+        backgroundImage: `${c.gradHero}, radial-gradient(${c.borderI} 1px, transparent 1px)`,
+        backgroundSize: "auto, 28px 28px",
+      }}>
+        <div className="blob" style={{ width: 480, height: 480, background: `radial-gradient(circle,${c.teal}12 0%,transparent 70%)`, top: -100, right: -100, animation: "pulse 9s ease-in-out infinite" }} />
+        <div className="blob" style={{ width: 380, height: 380, background: `radial-gradient(circle,${c.gold}10 0%,transparent 70%)`, bottom: -80, left: -80, animation: "pulse 11s ease-in-out infinite 3s" }} />
 
-          <div style={{ animation: "slideIn .7s ease" }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8, background: c.tealL, border: `1px solid ${c.tealB}`,
-              color: c.teal, padding: "7px 16px", borderRadius: 100, fontSize: 12, fontWeight: 700, letterSpacing: .8,
-              textTransform: "uppercase", marginBottom: 28
-            }}>
-              <LiveDot color={c.teal} /> AI Clinical Intelligence · Live
-            </div>
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 2 }}>
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 80, alignItems: "center" }}>
 
-            <h1 className="hero-h1" style={{
-              fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 60, fontWeight: 800,
-              lineHeight: 1.04, color: c.text, margin: "0 0 22px", letterSpacing: -2
-            }}>
-              Identify Rare<br />
-              Diseases with<br />
-              <span style={{
-                background: `linear-gradient(110deg,${c.teal} 0%,${c.blue} 50%,${c.purple} 100%)`,
-                backgroundSize: "200%", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                backgroundClip: "text", animation: "gradShift 4s ease infinite"
-              }}>
-                Precision AI
+            {/* Left */}
+            <div style={{ animation: "fadeUp .6s cubic-bezier(.2,.7,.3,1) both" }}>
+              <span className="eyebrow" style={{ marginBottom: 22, display: "inline-flex" }}>
+                Multimodal Diagnostic Intelligence
               </span>
-            </h1>
 
-            <p className="hero-sub" style={{ fontSize: 17, color: c.sub, lineHeight: 1.8, maxWidth: 460, margin: "0 0 40px" }}>
-              Submit patient symptoms and biomedical scans. Our multimodal AI cross-references 1,374 rare diseases and returns ranked, confidence-scored differential diagnoses instantly.
-            </p>
-
-            <div className="hero-btns" style={{ display: "flex", gap: 12, marginBottom: 52 }}>
-              <button className="hero-cta-p" onClick={() => navigate("/predict")} style={{
-                background: c.teal, color: "#fff", border: "none", padding: "16px 36px",
-                borderRadius: 13, fontWeight: 800, fontSize: 15, cursor: "pointer",
-                fontFamily: "'Inter',sans-serif", boxShadow: `0 8px 28px ${c.teal}38`,
-                transition: "all .2s", display: "flex", alignItems: "center", gap: 8,
+              <h1 className="hero-title" style={{
+                fontFamily: "'Fraunces',serif",
+                fontSize: 58, fontWeight: 600, color: c.text,
+                margin: "20px 0 26px", lineHeight: 1.06, letterSpacing: "-0.02em",
               }}>
-                <span>🔍</span> Start Diagnosis
-              </button>
-              <button className="hero-cta-s" onClick={() => navigate("/dashboard")} style={{
-                background: c.card, color: c.text, border: `1.5px solid ${c.borderI}`,
-                padding: "16px 36px", borderRadius: 13, fontWeight: 600, fontSize: 15,
-                cursor: "pointer", fontFamily: "'Inter',sans-serif", transition: "all .2s",
+                Identify rare<br />
+                <span style={{ fontStyle: "italic", color: c.teal, fontWeight: 500 }}>diseases</span> with
+                <br />precision AI
+              </h1>
+
+              <p style={{
+                fontSize: 16.5, color: c.sub, lineHeight: 1.75,
+                margin: "0 0 36px", maxWidth: 480,
               }}>
-                View Dashboard
-              </button>
-            </div>
+                Multimodal AI combining symptom analysis and biomedical image recognition,
+                trained on <strong style={{ color: c.text, fontWeight: 700 }}>36,487 real patient cases</strong> across
+                1,374 rare diseases from the ZebraMap dataset.
+              </p>
 
-            <div className="trust-row" style={{ display: "flex", gap: 40, paddingTop: 40, borderTop: `1px solid ${c.border}` }}>
-              {[["36K+", "Patient Cases"], ["1,374", "Rare Diseases"], ["94K+", "Medical Images"]].map(([v, l]) => (
-                <div key={l}>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 28, fontWeight: 800, color: c.text, letterSpacing: -.5, animation: "countUp .7s ease" }}><Counter target={v} /></div>
-                  <div style={{ fontSize: 12, color: c.muted, marginTop: 3, fontWeight: 500 }}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — dashboard preview */}
-          <div className="hero-preview" style={{
-            background: c.card, border: `1px solid ${c.border}`, borderRadius: 26, padding: 32,
-            boxShadow: "0 28px 72px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.05)",
-            animation: "fadeUp .8s .15s ease both",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-              <div>
-                <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 16, color: c.text, margin: "0 0 2px" }}>System Status</p>
-                <p style={{ fontSize: 12, color: c.muted, margin: 0 }}>Real-time overview</p>
+              <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 44 }}>
+                <Link to={user ? "/predict" : "/signup"} className="hero-cta-primary">
+                  {user ? "Start Predicting" : "Get Started Free"}
+                </Link>
+                <Link to="/dashboard" className="hero-cta-outline">
+                  View Analytics
+                </Link>
               </div>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, background: c.tealL, border: `1px solid ${c.tealB}`, color: c.teal, padding: "5px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, letterSpacing: .5, textTransform: "uppercase" }}>
-                <LiveDot color={c.teal} /> Online
-              </span>
-            </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-              {[["Predictions", "1,254", c.tealL, c.teal], ["Top-3 Accuracy", "52.9%", c.blueL, c.blue], ["Diseases", "49", c.purpL, c.purple], ["Images", "35K+", c.ambL, c.amber]].map(([l, v, bg, col]) => (
-                <div key={l} style={{ background: bg, borderRadius: 14, padding: "16px 18px" }}>
-                  <p style={{ fontSize: 10, color: col, opacity: .7, textTransform: "uppercase", letterSpacing: .8, margin: "0 0 6px", fontWeight: 800 }}>{l}</p>
-                  <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 26, fontWeight: 800, color: col, margin: 0 }}>{v}</p>
-                </div>
-              ))}
-            </div>
+              <div style={{ height: 1, background: c.border, maxWidth: 480, marginBottom: 28 }} />
 
-            <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 18, marginBottom: 18 }}>
-              <p style={{ fontSize: 10, fontWeight: 800, color: c.muted, textTransform: "uppercase", letterSpacing: .9, margin: "0 0 13px" }}>Model Performance</p>
-              {[["Symptom Model", 52.9, c.teal], ["Image Model", 35, c.blue, "Training"], ["Fusion Model", 0, c.purple, "Coming soon"]].map(([l, p, col, note]) => (
-                <div key={l} style={{ marginBottom: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 5 }}>
-                    <span style={{ color: c.sub, fontWeight: 500 }}>{l}</span>
-                    <span style={{ color: col, fontWeight: 700 }}>{note || `${p}%`}</span>
+              {/* Mini stats */}
+              <div className="mini-stats" style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+                {[
+                  { val: "58.39%", label: "Top-1 Fusion Acc." },
+                  { val: "83.87%", label: "Top-5 Accuracy" },
+                  { val: analytics?.total_predictions || "1K+", label: "Predictions Made" },
+                ].map(({ val, label }) => (
+                  <div key={label}>
+                    <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 21, fontWeight: 600, color: c.text, letterSpacing: "-0.01em" }}>{val}</div>
+                    <div style={{ fontSize: 11.5, color: c.muted, fontWeight: 500, marginTop: 4 }}>{label}</div>
                   </div>
-                  <div style={{ height: 5, background: c.border, borderRadius: 100 }}>
-                    <div style={{ height: 5, width: `${p}%`, background: col, borderRadius: 100, animation: "barGrow 1s ease" }} />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <button onClick={() => navigate("/predict")} style={{
-              width: "100%", background: c.text, color: c.bg, border: "none",
-              padding: "13px 20px", borderRadius: 12, fontWeight: 700, fontSize: 14,
-              cursor: "pointer", fontFamily: "'Inter',sans-serif", transition: "opacity .2s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-            >Run a Diagnosis →</button>
+            {/* Right — visual */}
+            <div className="hero-visual" style={{ animation: "fadeUp .6s cubic-bezier(.2,.7,.3,1) .15s both" }}>
+              <div style={{
+                background: c.card, border: `1px solid ${c.border}`,
+                borderTop: `2px solid ${c.teal}`,
+                borderRadius: 6, padding: "36px 32px 30px", boxShadow: c.shadowXl,
+                position: "relative", overflow: "hidden",
+              }}>
+                {/* Faint dot-grid backdrop behind the illustration */}
+                <div style={{
+                  position: "absolute", inset: 0,
+                  backgroundImage: `radial-gradient(${c.borderI} 1px, transparent 1px)`,
+                  backgroundSize: "22px 22px",
+                  opacity: 0.6, pointerEvents: "none",
+                }} />
+
+                <div style={{ position: "relative", zIndex: 2 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span className="eyebrow" style={{ fontSize: 10 }}>Clinical Intelligence</span>
+                    <VitalLine color={c.teal} width={70} height={18} />
+                  </div>
+
+                  {/* Line-art clinician illustration */}
+                  <svg viewBox="0 0 360 340" width="100%" height="auto" style={{ display: "block", margin: "10px 0 4px" }}>
+                    {/* soft halo */}
+                    <circle cx="180" cy="150" r="128" fill={c.tealL} opacity="0.5" />
+
+                    {/* coat / shoulders */}
+                    <path
+                      d="M70 320 C70 250 110 205 152 196 L152 178 C138 168 130 150 130 128 C130 90 152 62 180 62 C208 62 230 90 230 128 C230 150 222 168 208 178 L208 196 C250 205 290 250 290 320"
+                      fill="none" stroke={c.teal} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* collar */}
+                    <path d="M152 196 L180 224 L208 196" fill="none" stroke={c.teal} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    {/* lapel lines */}
+                    <path d="M160 200 L146 260" fill="none" stroke={c.borderI} strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M200 200 L214 260" fill="none" stroke={c.borderI} strokeWidth="1.5" strokeLinecap="round" />
+
+                    {/* face detail (minimal) */}
+                    <path d="M158 118 Q180 108 202 118" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
+                    <circle cx="164" cy="132" r="2.2" fill={c.muted} opacity="0.55" />
+                    <circle cx="196" cy="132" r="2.2" fill={c.muted} opacity="0.55" />
+                    <path d="M172 152 Q180 158 188 152" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
+
+                    {/* stethoscope */}
+                    <path
+                      d="M150 210 C150 236 158 250 180 250 C202 250 210 236 210 210"
+                      fill="none" stroke={c.gold} strokeWidth="2.5" strokeLinecap="round"
+                    />
+                    <circle cx="180" cy="256" r="7" fill="none" stroke={c.gold} strokeWidth="2.5" />
+                    <circle cx="150" cy="208" r="3.5" fill={c.gold} />
+                    <circle cx="210" cy="208" r="3.5" fill={c.gold} />
+
+                    {/* rank/vital accent marks */}
+                    <path d="M40 300 H90 M270 300 H320" stroke={c.border} strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+
+                  <div style={{ textAlign: "center", marginTop: 6 }}>
+                    <p style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: c.text, margin: "0 0 6px", letterSpacing: "-0.01em" }}>
+                      Built alongside clinical judgment
+                    </p>
+                    <p style={{ fontSize: 13, color: c.sub, margin: "0 auto", maxWidth: 300, lineHeight: 1.65 }}>
+                      AI DOC ranks differential diagnoses for review — it supports the clinician, it doesn't replace them.
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 22, paddingTop: 20, borderTop: `1px solid ${c.border}` }}>
+                    {[
+                      { val: "62", label: "Tracked Diseases" },
+                      { val: "5", label: "Scan Modalities" },
+                      { val: "24/7", label: "Availability" },
+                    ].map(({ val, label }) => (
+                      <div key={label} style={{ textAlign: "center" }}>
+                        <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 16, fontWeight: 600, color: c.teal }}>{val}</div>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 600, marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ══ STATS BAND ══ */}
-      <div style={{ background: c.footerBg, padding: "40px 32px" }}>
+      </section>
+
+      {/* ── STATS ─────────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="stats-row" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0 }}>
-            {[
-              { icon: "🔮", val: "1,254", label: "Total Predictions", sub: "All time" },
-              { icon: "🎯", val: "52.9%", label: "Top-3 Accuracy", sub: "Symptom model" },
-              { icon: "🧬", val: "49", label: "Diseases Covered", sub: "Tier A indexed" },
-              { icon: "🩻", val: "35K+", label: "Training Images", sub: "Biomedical scans" },
-            ].map(({ icon, val, label, sub }, i) => (
-              <div key={label} style={{ padding: "0 32px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 22 }}>{icon}</span>
-                  <p style={{
-                    fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 32, fontWeight: 800,
-                    color: "#F8FAFC", margin: 0, letterSpacing: -.5
-                  }}>{val}</p>
-                </div>
-                <p style={{ fontSize: 13, color: "#94A8BA", margin: "0 0 3px", fontWeight: 600 }}>{label}</p>
-                <p style={{ fontSize: 11, color: "#5A7184", margin: 0 }}>{sub}</p>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>By The Numbers</span>
+            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, color: c.text, margin: "18px 0 0", letterSpacing: "-0.02em" }}>
+              Built on real patient data
+            </h2>
+          </div>
+          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: c.border, border: `1px solid ${c.border}` }}>
+            {STATS.map(({ val, label, sub }) => (
+              <div key={label} className="stat-card">
+                <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 32, fontWeight: 600, color: c.text, letterSpacing: "-0.02em", lineHeight: 1, marginBottom: 10 }}>{val}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: c.text, marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: c.muted }}>{sub}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ══ FEATURES ══ */}
-      <div style={{ background: c.card, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
-        <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 32px" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <Eyebrow c={c}>Capabilities</Eyebrow>
-            <h2 className="section-title" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 40, fontWeight: 800, color: c.text, margin: "0 0 14px", letterSpacing: -.8 }}>Three Diagnostic Pathways</h2>
-            <p style={{ fontSize: 16, color: c.sub, maxWidth: 460, margin: "0 auto", lineHeight: 1.75 }}>Symptoms alone, images alone, or both combined for maximum precision.</p>
+      {/* ── FEATURES ──────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px", background: c.bgAlt }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>Core Technology</span>
+            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, color: c.text, margin: "18px 0 14px", letterSpacing: "-0.02em" }}>
+              Three models, one diagnosis
+            </h2>
+            <p style={{ fontSize: 15.5, color: c.sub, maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>
+              Symptom NLP, biomedical image CNN, and GAN augmentation — combined via late-weighted fusion.
+            </p>
           </div>
-          <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
-            <FeatureCard c={c} icon="🧬" tag="NLP" tagColor={c.teal} tagBg={c.tealL} tagBorder={c.tealB} title="Symptom Analysis" desc="TF-IDF encoded symptom vectors fed into a multinomial classifier trained on 8,568 patient cases." delay={0} />
-            <FeatureCard c={c} icon="🔬" tag="Vision" tagColor={c.blue} tagBg={c.blueL} tagBorder={c.blueB} title="Image Detection" desc="EfficientNet-B4 fine-tuned on 35,374 biomedical images across MRI, CT, dermoscopy, and histopathology." delay={.08} />
-            <FeatureCard c={c} icon="🤖" tag="Fusion" tagColor={c.purple} tagBg={c.purpL} tagBorder={c.purpB} title="Multimodal AI" desc="Cross-attention fusion of symptom and imaging signals. Correct diagnosis in top-3 predictions 53% of the time." delay={.16} />
-            <FeatureCard c={c} icon="📊" tag="Analytics" tagColor={c.amber} tagBg={c.ambL} tagBorder={c.ambB} title="Live Analytics" desc="Monitor prediction history, confidence distributions, and model performance metrics in real time." delay={.24} />
-          </div>
-        </div>
-      </div>
 
-      {/* ══ HOW IT WORKS ══ */}
-      <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 32px" }}>
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <Eyebrow c={c}>Process</Eyebrow>
-          <h2 className="section-title" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 40, fontWeight: 800, color: c.text, margin: "0 0 12px", letterSpacing: -.8 }}>Diagnosis in 3 Steps</h2>
-          <p style={{ fontSize: 16, color: c.sub, margin: 0 }}>Straightforward workflow from symptoms to ranked differential diagnosis.</p>
-        </div>
-        <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 0 }}>
-          {[
-            { n: "01", icon: "📝", title: "Enter Symptoms", desc: "Describe patient symptoms in natural language or use quick-add chips for common presentations.", color: c.teal },
-            { n: "02", icon: "🩻", title: "Upload Scan", desc: "Optionally add a biomedical image — MRI, CT, dermoscopy, or histopathology — for multimodal analysis.", color: c.blue },
-            { n: "03", icon: "🎯", title: "Get Diagnosis", desc: "Receive ranked differential diagnoses with probability scores, confidence levels, and model attribution.", color: c.purple },
-          ].map(({ n, icon, title, desc, color }, i) => (
-            <div key={n} className="step-seg" style={{
-              padding: "44px 36px", background: i === 1 ? c.tealL : c.card,
-              border: `1px solid ${c.border}`, borderLeft: i > 0 ? "none" : `1px solid ${c.border}`,
-              borderRadius: i === 0 ? "20px 0 0 20px" : i === 2 ? "0 20px 20px 0" : 0,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <div style={{
-                  width: 42, height: 42, borderRadius: "50%", background: c.card, border: `2px solid ${color}44`,
-                  display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color
-                }}>
-                  {n}
+          <div className="feat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: c.border, border: `1px solid ${c.border}` }}>
+            {FEATURES.map(({ mark, title, desc, color, badge }) => {
+              const col = colorMap[color];
+              return (
+                <div key={title} className="feature-card">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+                    <span style={{ fontFamily: "'Fraunces',serif", fontStyle: "italic", fontSize: 22, fontWeight: 600, color: col.text }}>{mark}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: col.text, background: col.bg, border: `1px solid ${col.border}`, padding: "4px 12px", borderRadius: 100, letterSpacing: "0.05em", textTransform: "uppercase" }}>{badge}</span>
+                  </div>
+                  <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 19, fontWeight: 600, color: c.text, margin: "0 0 12px", letterSpacing: "-0.01em" }}>{title}</h3>
+                  <p style={{ fontSize: 14, color: c.sub, lineHeight: 1.75, margin: 0 }}>{desc}</p>
                 </div>
-                <span style={{ fontSize: 28 }}>{icon}</span>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>Process</span>
+            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, color: c.text, margin: "18px 0 0", letterSpacing: "-0.02em" }}>
+              Diagnosis in four steps
+            </h2>
+          </div>
+
+          <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20 }}>
+            {STEPS.map(({ n, title, desc }, i) => (
+              <div key={n} className="step-card" style={{ borderTop: `2px solid ${i === 0 ? c.teal : c.border}` }}>
+                <div className="step-num" style={{ marginTop: 18, marginBottom: 14 }}>{n}</div>
+                <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 16.5, fontWeight: 600, color: c.text, margin: "0 0 10px" }}>{title}</h3>
+                <p style={{ fontSize: 13.5, color: c.sub, lineHeight: 1.7, margin: 0 }}>{desc}</p>
               </div>
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 19, fontWeight: 700, color: c.text, margin: "0 0 12px" }}>{title}</h3>
-              <p style={{ fontSize: 14, color: c.sub, lineHeight: 1.8, margin: 0 }}>{desc}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div className="cta-banner-pad" style={{
+            background: c.text, borderRadius: 8, padding: "64px 52px",
+            textAlign: "center", position: "relative", overflow: "hidden",
+          }}>
+            <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 25% 30%, ${c.teal}30, transparent 60%)` }} />
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+                <VitalLine color={c.gold} width={140} height={24} />
+              </div>
+              <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, color: "#fff", margin: "0 0 16px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+                Ready to try AI DOC?
+              </h2>
+              <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.68)", margin: "0 0 36px", lineHeight: 1.7, maxWidth: 460, marginLeft: "auto", marginRight: "auto" }}>
+                Enter symptoms, upload a scan, and get ranked rare disease predictions in seconds. No special hardware required.
+              </p>
+              <div className="cta-link-row" style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+                <Link to={user ? "/predict" : "/signup"} className="cta-link-light">
+                  {user ? "Start Predicting →" : "Get Started Free →"}
+                </Link>
+                <Link to="/dashboard" className="cta-link-ghost">
+                  View Model Results
+                </Link>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ══ TESTIMONIALS ══ */}
-      <div style={{ background: c.card, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
-        <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 32px" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <Eyebrow c={c}>Testimonials</Eyebrow>
-            <h2 className="section-title" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 40, fontWeight: 800, color: c.text, margin: 0, letterSpacing: -.8 }}>Trusted by Clinicians</h2>
-          </div>
-          <div className="test-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
-            <TestimonialCard c={c} quote="The top-3 accuracy on rare disease predictions has measurably improved our differential diagnosis workflow." name="Dr. Priya Mehta" role="Neurologist, AIIMS Delhi" initials="PM" color={c.teal} delay={0} />
-            <TestimonialCard c={c} quote="Finally a tool combining symptom analysis and imaging in a single, clean, fast interface." name="Dr. Arjun Sharma" role="Radiologist, Apollo Hospitals" initials="AS" color={c.blue} delay={.1} />
-            <TestimonialCard c={c} quote="Rare disease identification used to take weeks of specialist referrals. This system narrows it down in seconds." name="Dr. Kavitha Nair" role="Geneticist, CMC Vellore" initials="KN" color={c.purple} delay={.2} />
           </div>
         </div>
-      </div>
-
-      {/* ══ FAQ ══ */}
-      <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 32px" }}>
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <Eyebrow c={c}>FAQ</Eyebrow>
-          <h2 className="section-title" style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 40, fontWeight: 800, color: c.text, margin: 0, letterSpacing: -.8 }}>Common Questions</h2>
-        </div>
-        <div className="faq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, maxWidth: 960, margin: "0 auto" }}>
-          {[
-            { q: "How accurate is the symptom model?", a: "The symptom model achieves 52.9% top-3 accuracy across 49 rare diseases, trained on 8,568 patient cases using TF-IDF encoding and logistic regression." },
-            { q: "What image types are supported?", a: "MRI brain scans, CT abdomen/thorax, dermoscopy images, retinal fundus photographs, and histopathology slides. The model is built on EfficientNet-B4." },
-            { q: "Is this for clinical use?", a: "AI DOC is intended for research and educational purposes. All predictions should be reviewed by a licensed clinician before influencing treatment decisions." },
-            { q: "How is patient data handled?", a: "No patient data is stored. Inputs are processed in-session and are not retained after the session ends. No personal identifiers should be submitted." },
-            { q: "What is the fusion model?", a: "The fusion model will combine symptom and imaging signals via cross-attention. It is currently in development and expected to significantly improve accuracy." },
-            { q: "How many diseases are covered?", a: "The current Tier A release covers 49 rare diseases with high-quality symptom and imaging data. Coverage will expand as additional datasets are validated." },
-            { q: "Is the system suitable for emergency medical situations?", a: "No. This system is intended for educational and research purposes and should not be used in emergency situations. Always seek immediate medical assistance in urgent cases." },
-            { q: "What is a confidence score?", a: "A confidence score indicates how strongly the AI model believes a prediction is correct. Higher confidence scores generally suggest greater certainty, but they do not guarantee correctness." }
-          ].map(({ q, a }) => <FaqItem key={q} q={q} a={a} c={c} />)}
-        </div>
-      </div>
-
-      {/* ══ CTA BANNER ══ */}
-      <div className="section-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
-        <div style={{
-          background: `linear-gradient(135deg,${c.footerBg} 0%,${c.teal} 60%,${c.blue} 100%)`,
-          backgroundSize: "200%", borderRadius: 26, padding: "64px 48px", textAlign: "center",
-          boxShadow: `0 28px 72px ${c.teal}30`, animation: "gradShift 6s ease infinite"
-        }}>
-          <Eyebrow c={c}>Get Started</Eyebrow>
-          <h2 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 38, fontWeight: 800, color: "#fff", margin: "0 0 14px", letterSpacing: -.5 }}>Ready to Run a Diagnosis?</h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", margin: "0 0 36px", lineHeight: 1.75, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>Enter symptoms, upload a scan, and receive AI-powered differential diagnoses in under 3 seconds.</p>
-          <div className="cta-banner-btns" style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-            <button onClick={() => navigate("/predict")} style={{ background: "#fff", color: c.teal, border: "none", padding: "15px 36px", borderRadius: 13, fontWeight: 800, fontSize: 15, cursor: "pointer", fontFamily: "'Inter',sans-serif", transition: "all .2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-              Start Diagnosis →
-            </button>
-            <button onClick={() => navigate("/dashboard")} style={{ background: "transparent", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", padding: "15px 36px", borderRadius: 13, fontWeight: 600, fontSize: 15, cursor: "pointer", fontFamily: "'Inter',sans-serif", transition: "all .2s" }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              View Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
-
-export default Home;

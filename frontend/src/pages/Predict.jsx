@@ -1,665 +1,388 @@
-import { useState, useEffect, useRef } from "react";
-import { predictDisease } from "../services/Api";
+import { useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
+import { predictDisease } from "../services/Api";
+import PredictionCard from "../components/PredictionCard";
 
-const PALETTE_KEY = (c) => [
-  { bar: c.teal, light: c.tealL, text: c.teal, border: c.tealB },
-  { bar: c.blue, light: c.blueL, text: c.blue, border: c.blueB },
-  { bar: c.purple, light: c.purpL, text: c.purple, border: c.purpB },
-  { bar: c.amber, light: c.ambL, text: c.amber, border: c.ambB },
-  { bar: c.slate, light: c.slatL, text: c.sub, border: c.slatB },
-];
+const CSS = (c) => `
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin     { to{transform:rotate(360deg)} }
+  @keyframes pulse    { 0%,100%{opacity:.5} 50%{opacity:1} }
+  @keyframes drawLine { from{stroke-dashoffset:600} to{stroke-dashoffset:0} }
 
-const CONF_KEY = (c) => ({
-  High: { bg: c.tealL, color: c.teal, border: c.tealB },
-  Medium: { bg: c.ambL, color: c.amber, border: c.ambB },
-  Low: { bg: c.redL, color: c.red, border: c.redB },
-});
-
-/* Common symptom dictionary for autocomplete */
-const SYMPTOM_BANK = [
-  "fatigue", "night blindness", "skin lesions", "joint pain", "vision loss",
-  "dry cough", "muscle weakness", "seizures", "hearing loss", "ataxia",
-  "progressive vision loss", "angioid streaks", "skin papules", "photophobia",
-  "tremor", "speech difficulty", "swallowing difficulty", "abdominal pain",
-  "jaundice", "easy bruising", "frequent infections", "growth delay",
-  "developmental delay", "cognitive decline", "peripheral neuropathy",
-  "muscle cramps", "bone pain", "vision blurring", "double vision",
-  "balance problems", "memory loss", "skin rash", "hair loss",
-];
-
-const GLOBAL_CSS = (c) => `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
-
-  @keyframes spin        { to { transform: rotate(360deg) } }
-  @keyframes fadeUp      { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
-  @keyframes slideRight  { from { opacity:0; transform:translateX(-12px) } to { opacity:1; transform:translateX(0) } }
-  @keyframes barGrow     { from { width:0 } }
-  @keyframes pulseBorder { 0%,100%{box-shadow:0 0 0 0 ${c.teal}30} 50%{box-shadow:0 0 0 6px ${c.teal}00} }
-  @keyframes shimmer     { 0% { background-position: -600px 0 } 100% { background-position: 600px 0 } }
-  @keyframes float       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-  @keyframes countUp     { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
-  @keyframes dotBlink    { 0%,80%,100%{opacity:0} 40%{opacity:1} }
-  @keyframes scanLine    { from{top:0} to{top:100%} }
-  @keyframes dropdownIn  { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-
-  .chip:hover  { background:${c.tealL}!important; border-color:${c.tealB}!important; color:${c.teal}!important }
-  .dropzone:hover { border-color:${c.teal}!important; background:${c.tealL}!important }
-  .result-row  { animation: fadeUp .35s ease both }
-  .result-row:hover { box-shadow:0 6px 24px rgba(0,0,0,0.12)!important; transform:translateY(-2px)!important }
-  .predict-btn:hover:not(:disabled) { background:${c.tealDark}!important; box-shadow:0 12px 32px ${c.teal}40!important; transform:translateY(-1px) }
-  .predict-btn:active:not(:disabled) { transform:scale(.98) }
-  .reset-btn:hover { background:${c.bgAlt}!important; border-color:${c.faint}!important }
-  .tab-btn:hover   { color:${c.teal}!important; background:${c.tealL}!important }
-  .ac-item:hover   { background:${c.tealL}!important }
-
-  .skeleton {
-    background: linear-gradient(90deg, ${c.cardAlt} 25%, ${c.border} 50%, ${c.cardAlt} 75%);
-    background-size: 600px 100%;
-    animation: shimmer 1.4s infinite linear;
-    border-radius: 10px;
+  .eyebrow {
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    color:${c.gold}; letter-spacing:0.14em; text-transform:uppercase;
   }
+  .eyebrow::before { content:''; width:20px; height:1px; background:${c.gold}; display:inline-block; }
 
-  @media (max-width: 900px) {
-    .predict-grid    { grid-template-columns: 1fr !important }
-    .predict-wrapper { padding: 36px 20px !important }
+  .symptom-input {
+    width:100%; min-height:130px; padding:16px 18px;
+    border-radius:4px; border:1px solid ${c.borderI};
+    background:${c.bgDeep}; color:${c.text}; font-size:14.5px;
+    font-family:'Inter',sans-serif; resize:vertical; outline:none;
+    line-height:1.6; box-sizing:border-box;
+    transition:border-color .2s, box-shadow .2s, background .2s;
   }
-  @media (max-width: 480px) {
-    .predict-h1    { font-size: 30px !important }
-    .chip-grid     { gap: 6px !important }
-    .action-row    { flex-direction: column !important }
-    .action-row button { width: 100% !important }
+  .symptom-input:focus { border-color:${c.teal}!important; box-shadow:0 0 0 3px ${c.tealL}; background:${c.card}; }
+  .symptom-input::placeholder { color:${c.muted} }
+
+  .chip {
+    padding:7px 15px; border-radius:100px; font-size:12.5px;
+    font-weight:600; cursor:pointer; border:1px solid ${c.borderI};
+    background:${c.card}; color:${c.sub}; transition:all .15s;
+    font-family:'Inter',sans-serif; white-space:nowrap;
+  }
+  .chip:hover { border-color:${c.teal}; color:${c.teal}; background:${c.tealL}; }
+  .chip.active { border-color:${c.teal}; color:${c.teal}; background:${c.tealL}; font-weight:700; }
+
+  .tab-btn {
+    flex:1; padding:12px 16px; border:none; cursor:pointer;
+    font-size:13.5px; font-weight:600; font-family:'Inter',sans-serif;
+    transition:all .2s; border-radius:2px; letter-spacing:0.01em;
+  }
+  .tab-btn.active { background:${c.card}; color:${c.teal}; box-shadow:${c.shadowSm}; font-weight:700; }
+  .tab-btn:not(.active) { background:transparent; color:${c.sub}; }
+  .tab-btn:not(.active):hover { color:${c.text}; }
+
+  .predict-btn {
+    width:100%; padding:17px; border-radius:4px; border:none;
+    background:${c.text}; color:${c.bg}; font-size:15px;
+    font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    transition:all .25s; letter-spacing:0.01em;
+  }
+  .predict-btn:hover:not(:disabled) { background:${c.teal}; color:#fff; transform:translateY(-2px); box-shadow:${c.shadowTeal}; }
+  .predict-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+  .reset-btn {
+    padding:14px 24px; border-radius:4px; border:1px solid ${c.borderI};
+    background:transparent; color:${c.sub}; font-size:14px;
+    font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+    transition:all .2s;
+  }
+  .reset-btn:hover { border-color:${c.red}; color:${c.red}; background:${c.redL}; }
+
+  .upload-zone {
+    border:1.5px dashed ${c.borderI}; border-radius:4px;
+    padding:40px 24px; text-align:center; cursor:pointer;
+    transition:all .2s; background:${c.bgDeep};
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color:${c.teal}!important; background:${c.tealL}!important; }
+
+  @media(max-width:1024px){ .main-grid{ grid-template-columns:1fr!important; gap:24px!important } }
+  @media(max-width:600px){
+    .predict-pad   { padding:32px 16px!important }
+    .predict-h1    { font-size:30px!important }
+    .symptom-input { min-height:110px!important; font-size:16px!important }
+    .tab-btn       { padding:12px 10px!important; font-size:13px!important }
+    .chip          { padding:9px 14px!important; font-size:12px!important }
+    .predict-btn   { padding:15px!important; font-size:14.5px!important }
   }
 `;
 
-const ConfBadge = ({ conf, c }) => {
-  const s = CONF_KEY(c)[conf] || CONF_KEY(c).Low;
+const QUICK_SYMPTOMS = [
+  "fatigue", "night blindness", "skin lesions", "joint pain",
+  "vision loss", "dry cough", "muscle weakness", "seizures",
+  "hearing loss", "ataxia", "tremors", "dysphagia",
+];
+
+function VitalLine({ color, width = 70, height = 18 }) {
   return (
-    <span style={{
-      padding: "4px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800,
-      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-      textTransform: "uppercase", letterSpacing: .8, whiteSpace: "nowrap"
-    }}>
-      {conf}
-    </span>
+    <svg width={width} height={height} viewBox="0 0 160 28" fill="none">
+      <path d="M0 14H40L48 4L58 24L66 14H160" stroke={color} strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" strokeDasharray="600"
+        style={{ animation: "drawLine 1.4s ease forwards" }} />
+    </svg>
   );
-};
+}
 
-const Dots = ({ color }) => (
-  <span style={{ display: "inline-flex", gap: 3, alignItems: "center", marginLeft: 6 }}>
-    {[0, 1, 2].map(i => (
-      <span key={i} style={{
-        width: 5, height: 5, borderRadius: "50%", background: `${color}80`,
-        animation: `dotBlink 1.2s ${i * 0.2}s ease-in-out infinite`
-      }} />
-    ))}
-  </span>
-);
-
-const ScanOverlay = ({ color }) => (
-  <div style={{ position: "absolute", inset: 0, overflow: "hidden", borderRadius: 14, pointerEvents: "none" }}>
-    <div style={{
-      position: "absolute", left: 0, right: 0, height: 2,
-      background: `linear-gradient(90deg,transparent,${color}99,transparent)`,
-      animation: "scanLine 1.8s ease-in-out infinite", top: 0
-    }} />
-  </div>
-);
-
-const SkeletonCard = ({ delay, c }) => (
-  <div style={{
-    border: `1px solid ${c.border}`, borderRadius: 16, padding: "18px 20px",
-    animation: `fadeUp .4s ${delay}s ease both`, opacity: 0
-  }}>
-    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-      <div className="skeleton" style={{ height: 18, width: "55%" }} />
-      <div className="skeleton" style={{ height: 18, width: "15%" }} />
-    </div>
-    <div className="skeleton" style={{ height: 5, width: "100%", marginBottom: 10 }} />
-    <div className="skeleton" style={{ height: 22, width: "20%", borderRadius: 100 }} />
-  </div>
-);
-
-const StatPill = ({ icon, label, value, color, bg, border }) => (
-  <div style={{
-    background: bg, border: `1px solid ${border}`, borderRadius: 14, padding: "14px 18px",
-    display: "flex", alignItems: "center", gap: 12, animation: "fadeUp .5s ease both"
-  }}>
-    <span style={{ fontSize: 22 }}>{icon}</span>
-    <div>
-      <p style={{ fontSize: 10, color, opacity: .7, textTransform: "uppercase", letterSpacing: .9, margin: "0 0 3px", fontWeight: 800 }}>{label}</p>
-      <p style={{
-        fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 22, fontWeight: 800, color, margin: 0,
-        animation: "countUp .6s ease"
-      }}>{value}</p>
-    </div>
-  </div>
-);
-
-function Predict() {
+export default function Predict() {
   const { c } = useTheme();
   const toast = useToast();
-  const PALETTE = PALETTE_KEY(c);
+  const fileRef = useRef(null);
 
+  const [tab, setTab] = useState("symptoms");
   const [symptoms, setSymptoms] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [phase, setPhase] = useState("");
-  const [activeTab, setActiveTab] = useState("symptoms");
-  const [charCount, setCharCount] = useState(0);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggest, setShowSuggest] = useState(false);
-  const resultsRef = useRef(null);
-  const textareaRef = useRef(null);
+  const [results, setResults] = useState(null);
+  const [drag, setDrag] = useState(false);
+  const [topK] = useState(5);
 
-  const delay = (ms) => new Promise(r => setTimeout(r, ms));
+  const activeChips = symptoms.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 
-  const runPhases = async (fn) => {
-    setPhase("parsing");
-    await delay(700);
-    setPhase("analyzing");
-    await delay(900);
-    setPhase("ranking");
-    const data = await fn();
-    await delay(400);
-    setPhase("done");
-    return data;
-  };
-
-  const handlePredict = async () => {
-    if (!symptoms.trim()) {
-      toast.warn("Please enter at least one symptom before predicting.");
-      return;
-    }
-    try {
-      setLoading(true); setSubmitted(true); setResults([]);
-      const data = await runPhases(() => predictDisease(symptoms, image));
-      const preds = data?.predictions || [];
-      setResults(preds);
-      if (preds.length) {
-        toast.success(`Found ${preds.length} potential match${preds.length > 1 ? "es" : ""}. Top result: ${preds[0].disease}.`);
-      } else {
-        toast.info("No predictions returned for these symptoms.");
-      }
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-    } catch (e) {
-      console.error(e);
-      setPhase("done");
-      toast.error("Prediction failed. Check your API connection and try again.");
-    } finally { setLoading(false); }
+  const toggleChip = (chip) => {
+    const cur = symptoms.split(",").map(s => s.trim()).filter(Boolean);
+    const idx = cur.findIndex(s => s.toLowerCase() === chip);
+    if (idx >= 0) cur.splice(idx, 1); else cur.push(chip);
+    setSymptoms(cur.join(", "));
   };
 
   const handleFile = (file) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file (JPG or PNG).");
-      return;
-    }
-    setImage(file); setPreview(URL.createObjectURL(file));
-    toast.success("Scan uploaded successfully.");
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image file."); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("Image must be under 10 MB."); return; }
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
   };
 
-  const reset = () => {
-    setSymptoms(""); setImage(null); setPreview(null);
-    setResults([]); setSubmitted(false); setPhase(""); setCharCount(0);
-    setSuggestions([]); setShowSuggest(false);
+  const handleDrop = (e) => {
+    e.preventDefault(); setDrag(false);
+    handleFile(e.dataTransfer.files[0]);
   };
 
-  /* ── Autocomplete logic ── */
-  const handleSymptomChange = (val) => {
-    setSymptoms(val); setCharCount(val.length);
-    const lastSegment = val.split(/[,\n]/).pop().trim().toLowerCase();
-    if (lastSegment.length >= 2) {
-      const matches = SYMPTOM_BANK.filter(s =>
-        s.toLowerCase().includes(lastSegment) && s.toLowerCase() !== lastSegment
-      ).slice(0, 6);
-      setSuggestions(matches);
-      setShowSuggest(matches.length > 0);
-    } else {
-      setShowSuggest(false);
-    }
+  const handlePredict = async () => {
+    if (!symptoms.trim()) { toast.error("Please enter at least one symptom."); return; }
+    setLoading(true); setResults(null);
+    try {
+      const data = await predictDisease(symptoms.trim(), image, topK);
+      const preds = data.predictions || data;
+      if (!preds?.length) { toast.error("No predictions returned. Try different symptoms."); return; }
+      setResults({ predictions: preds, mode: data.mode || (image ? "multimodal_fusion" : "symptoms_only") });
+      toast.success(`Found ${preds.length} differential diagnoses.`);
+    } catch (err) {
+      toast.error("Prediction failed. Check your connection and try again.");
+      console.error(err);
+    } finally { setLoading(false); }
   };
 
-  const applySuggestion = (s) => {
-    const parts = symptoms.split(/[,\n]/);
-    parts[parts.length - 1] = ` ${s}`;
-    const next = parts.join(",").replace(/^,\s*/, "").trim();
-    setSymptoms(next); setCharCount(next.length);
-    setShowSuggest(false);
-    textareaRef.current?.focus();
+  const handleReset = () => {
+    setSymptoms(""); setImage(null); setPreview(null); setResults(null);
   };
 
-  const phaseLabel = {
-    parsing: "Parsing symptom vectors…",
-    analyzing: "Running diagnostic model…",
-    ranking: "Ranking differential diagnoses…",
-    done: "Complete",
-  };
-  const phasePercent = { parsing: 20, analyzing: 60, ranking: 88, done: 100 };
-
-  const QUICK_SYMPTOMS = [
-    "fatigue", "night blindness", "skin lesions", "joint pain",
-    "vision loss", "dry cough", "muscle weakness", "seizures",
-    "hearing loss", "ataxia",
-  ];
+  const charCount = symptoms.length;
 
   return (
-    <div style={{ minHeight: "100vh", background: c.bg, color: c.text, fontFamily: "'Inter',sans-serif" }}>
-      <style>{GLOBAL_CSS(c)}</style>
+    <div className="predict-pad" style={{ minHeight: "100vh", background: c.bg, fontFamily: "'Inter',sans-serif", padding: "48px 24px" }}>
+      <style>{CSS(c)}</style>
 
-      <div className="predict-wrapper" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 32px 0" }}>
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-            <span style={{
-              fontSize: 10, fontWeight: 800, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`,
-              padding: "4px 14px", borderRadius: 100, letterSpacing: 1.2, textTransform: "uppercase"
-            }}>
-              Diagnostic Engine
-            </span>
-            <span style={{
-              fontSize: 10, fontWeight: 600, color: c.muted, background: c.cardAlt, border: `1px solid ${c.border}`,
-              padding: "4px 12px", borderRadius: 100, letterSpacing: .8
-            }}>
-              Beta · v2.4
-            </span>
-          </div>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 40, animation: "fadeUp .5s ease both" }}>
+          <span className="eyebrow" style={{ marginBottom: 16, display: "inline-flex" }}>
+            Diagnostic Engine · Beta v2.4
+          </span>
           <h1 className="predict-h1" style={{
-            fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 38, fontWeight: 800,
-            margin: "0 0 10px", color: c.text, letterSpacing: -1
+            fontFamily: "'Fraunces',serif",
+            fontSize: 40, fontWeight: 600, color: c.text,
+            margin: "16px 0 12px", letterSpacing: "-0.02em",
           }}>Disease Prediction</h1>
-          <p style={{ color: c.sub, fontSize: 16, margin: 0, lineHeight: 1.65 }}>
-            Enter patient symptoms and optionally upload a biomedical scan for AI-powered differential diagnosis across 49 rare diseases.
+          <p style={{ fontSize: 15.5, color: c.sub, margin: 0, maxWidth: 600, lineHeight: 1.7 }}>
+            Enter patient symptoms and optionally upload a biomedical scan for
+            AI-powered differential diagnosis across 62 Tier-A rare diseases.
           </p>
         </div>
 
-        <div className="predict-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, paddingBottom: 56 }}>
+        {/* ── Main grid ──────────────────────────────────────────────── */}
+        <div className="main-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "start" }}>
 
-          {/* ══ LEFT PANEL ══ */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {/* ── INPUT PANEL ──────────────────────────────────────────── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+            {/* Tabs */}
             <div style={{
-              background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, overflow: "hidden",
-              boxShadow: "0 2px 16px rgba(0,0,0,0.04)"
+              background: c.bgAlt, border: `1px solid ${c.border}`,
+              borderRadius: 4, padding: 6, display: "flex", gap: 4,
             }}>
+              {[{ id: "symptoms", label: "Symptoms" }, { id: "image", label: "Scan Upload" }].map(t => (
+                <button key={t.id} className={`tab-btn${tab === t.id ? " active" : ""}`} onClick={() => setTab(t.id)}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
 
-              <div style={{ display: "flex", borderBottom: `1px solid ${c.border}`, background: c.bgAlt }}>
-                {[["symptoms", "🩺", "Symptoms"], ["image", "🔬", "Scan Upload"]].map(([id, icon, label]) => (
-                  <button key={id} className="tab-btn" onClick={() => setActiveTab(id)} style={{
-                    flex: 1, padding: "16px 20px", border: "none", cursor: "pointer",
-                    fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: activeTab === id ? 700 : 500,
-                    color: activeTab === id ? c.teal : c.sub,
-                    background: activeTab === id ? c.card : "transparent",
-                    borderBottom: activeTab === id ? `2px solid ${c.teal}` : "2px solid transparent",
-                    transition: "all .15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  }}>
-                    <span>{icon}</span>{label}
-                  </button>
-                ))}
+            {/* Symptoms tab */}
+            {tab === "symptoms" && (
+              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderTop: `2px solid ${c.teal}`, padding: 28, animation: "fadeUp .3s ease" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: c.sub, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Describe Symptoms
+                  </label>
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: charCount > 500 ? c.red : c.muted, fontWeight: 500 }}>
+                    {charCount} chars
+                  </span>
+                </div>
+
+                <textarea
+                  className="symptom-input"
+                  value={symptoms}
+                  onChange={e => setSymptoms(e.target.value)}
+                  placeholder="e.g. progressive vision loss, angioid streaks, skin papules on neck, fatigue, night blindness&#10;&#10;Separate symptoms with commas. Be as specific as possible."
+                />
+
+                {/* Quick add */}
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: c.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>
+                    Quick Add
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {QUICK_SYMPTOMS.map(s => (
+                      <button key={s} className={`chip${activeChips.includes(s) ? " active" : ""}`}
+                        onClick={() => toggleChip(s)}>
+                        {activeChips.includes(s) ? "✓ " : ""}{s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Model info */}
+                <div style={{
+                  marginTop: 18, padding: "11px 14px", borderRadius: 4,
+                  background: c.bgDeep, border: `1px solid ${c.border}`,
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <VitalLine color={c.teal} width={26} height={14} />
+                  <span style={{ fontSize: 11.5, color: c.muted, fontWeight: 500 }}>
+                    Symptom Model · TF-IDF + Logistic Regression · 62 Tier-A diseases
+                  </span>
+                </div>
               </div>
+            )}
 
-              <div style={{ padding: 28 }}>
+            {/* Image tab */}
+            {tab === "image" && (
+              <div style={{ background: c.card, border: `1px solid ${c.border}`, borderTop: `2px solid ${c.blue}`, padding: 28, animation: "fadeUp .3s ease" }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: c.sub, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 14 }}>
+                  Upload Medical Scan
+                </label>
 
-                {activeTab === "symptoms" && (
-                  <div style={{ animation: "fadeUp .3s ease" }}>
-                    <label style={{ fontSize: 11, fontWeight: 800, color: c.muted, letterSpacing: .8, textTransform: "uppercase", marginBottom: 9, display: "block" }}>
-                      Describe Symptoms
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <textarea ref={textareaRef} rows={6}
-                        placeholder="e.g. progressive vision loss, angioid streaks, skin papules on neck, fatigue, night blindness"
-                        value={symptoms}
-                        onChange={e => handleSymptomChange(e.target.value)}
-                        onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
-                        style={{
-                          width: "100%", background: c.bgAlt, border: `1.5px solid ${c.borderI}`,
-                          borderRadius: 14, padding: "13px 15px", color: c.text, fontSize: 14,
-                          outline: "none", fontFamily: "'Inter',sans-serif", resize: "none",
-                          boxSizing: "border-box", lineHeight: 1.7, transition: "border-color .2s, box-shadow .2s"
-                        }}
-                        onFocus={e => { e.target.style.borderColor = c.teal; e.target.style.boxShadow = `0 0 0 3px ${c.teal}18`; }}
-                      />
-                      {charCount > 0 && (
-                        <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: 11, color: c.muted, fontWeight: 500 }}>
-                          {charCount} chars
-                        </span>
-                      )}
-
-                      {/* Autocomplete dropdown */}
-                      {showSuggest && (
-                        <div style={{
-                          position: "absolute", left: 0, right: 0, top: "100%", marginTop: 6,
-                          background: c.card, border: `1px solid ${c.border}`, borderRadius: 12,
-                          boxShadow: "0 12px 32px rgba(0,0,0,0.14)", zIndex: 20, overflow: "hidden",
-                          animation: "dropdownIn .15s ease",
-                        }}>
-                          <p style={{
-                            fontSize: 10, color: c.muted, fontWeight: 700, textTransform: "uppercase",
-                            letterSpacing: .7, padding: "9px 14px 6px", margin: 0
-                          }}>Suggestions</p>
-                          {suggestions.map(s => (
-                            <div key={s} className="ac-item" onClick={() => applySuggestion(s)} style={{
-                              padding: "9px 14px", fontSize: 13.5, color: c.text, cursor: "pointer",
-                              display: "flex", alignItems: "center", gap: 8, transition: "background .12s",
-                            }}>
-                              <span style={{ color: c.teal, fontSize: 13 }}>+</span>{s}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {preview ? (
+                  <div style={{ position: "relative", borderRadius: 4, overflow: "hidden", border: `1px solid ${c.tealB}` }}>
+                    <img src={preview} alt="Preview" style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
+                    <button onClick={() => { setImage(null); setPreview(null); }} style={{
+                      position: "absolute", top: 10, right: 10,
+                      width: 32, height: 32, borderRadius: 4,
+                      background: "rgba(0,0,0,0.6)", border: "none",
+                      color: "#fff", cursor: "pointer", fontSize: 14,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>✕</button>
+                    <div style={{ padding: "12px 16px", background: c.tealL, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>✅</span>
+                      <span style={{ fontSize: 12.5, color: c.teal, fontWeight: 600 }}>{image?.name}</span>
                     </div>
-                    <p style={{ fontSize: 12, color: c.muted, marginTop: 7, marginBottom: 20 }}>
-                      Separate multiple symptoms with commas or new lines. Start typing for suggestions.
+                  </div>
+                ) : (
+                  <div className={`upload-zone${drag ? " drag" : ""}`}
+                    onClick={() => fileRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setDrag(true); }}
+                    onDragLeave={() => setDrag(false)}
+                    onDrop={handleDrop}
+                  >
+                    <div style={{ fontSize: 36, marginBottom: 14 }}>🩻</div>
+                    <p style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: c.text, margin: "0 0 6px" }}>Drop scan here or click to browse</p>
+                    <p style={{ fontSize: 12.5, color: c.muted, margin: 0 }}>MRI · CT · Fundus · Dermoscopy · Histopathology · X-ray</p>
+                    <p style={{ fontSize: 11.5, color: c.muted, margin: "8px 0 0" }}>PNG, JPG, JPEG · Max 10 MB</p>
+                  </div>
+                )}
+
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
+                  onChange={e => handleFile(e.target.files[0])} />
+
+                {!image && (
+                  <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 4, background: c.blueL, border: `1px solid ${c.blueB}` }}>
+                    <p style={{ fontSize: 12, color: c.blue, margin: 0, fontWeight: 500 }}>
+                      ℹ️ Optional — system falls back to symptom-only mode if no image is provided.
                     </p>
-
-                    <label style={{ fontSize: 11, fontWeight: 800, color: c.muted, letterSpacing: .8, textTransform: "uppercase", marginBottom: 9, display: "block" }}>Quick Add</label>
-                    <div className="chip-grid" style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                      {QUICK_SYMPTOMS.map(s => {
-                        const active = symptoms.toLowerCase().includes(s);
-                        return (
-                          <button key={s} className={active ? "" : "chip"} onClick={() => !active && setSymptoms(p => { const n = p ? `${p}, ${s}` : s; setCharCount(n.length); return n; })}
-                            style={{
-                              background: active ? c.tealL : c.cardAlt,
-                              border: `1px solid ${active ? c.tealB : c.borderI}`,
-                              color: active ? c.teal : c.sub,
-                              padding: "6px 13px", borderRadius: 100, fontSize: 12, cursor: active ? "default" : "pointer",
-                              fontFamily: "'Inter',sans-serif", fontWeight: active ? 700 : 500, transition: "all .15s",
-                              display: "flex", alignItems: "center", gap: 5,
-                            }}>
-                            {active ? "✓" : "+"} {s}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "image" && (
-                  <div style={{ animation: "fadeUp .3s ease" }}>
-                    <div className="dropzone"
-                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                      onDragLeave={() => setDragOver(false)}
-                      onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-                      onClick={() => document.getElementById("img-input").click()}
-                      style={{
-                        border: `2px dashed ${dragOver ? c.teal : c.faint}`,
-                        borderRadius: 18, padding: preview ? "0" : "52px 24px",
-                        textAlign: "center", background: dragOver ? c.tealL : c.bgAlt,
-                        transition: "all .2s", overflow: "hidden", cursor: "pointer",
-                        position: "relative",
-                      }}>
-                      {preview ? (
-                        <>
-                          <img src={preview} alt="scan preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
-                          <ScanOverlay color={c.teal} />
-                          <div style={{
-                            position: "absolute", top: 10, right: 10, background: `${c.card}EE`, backdropFilter: "blur(8px)",
-                            border: `1px solid ${c.tealB}`, borderRadius: 9, padding: "5px 11px",
-                            fontSize: 11, color: c.teal, fontWeight: 800, display: "flex", alignItems: "center", gap: 5
-                          }}>
-                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.teal, display: "inline-block" }} />
-                            Scan loaded
-                          </div>
-                          <button onClick={e => { e.stopPropagation(); setImage(null); setPreview(null); toast.info("Scan removed."); }}
-                            style={{
-                              position: "absolute", top: 10, left: 10, background: `${c.card}EE`,
-                              backdropFilter: "blur(8px)", border: `1px solid ${c.border}`, borderRadius: 8,
-                              padding: "5px 11px", fontSize: 11, color: c.sub, cursor: "pointer", fontWeight: 600
-                            }}>
-                            ✕ Remove
-                          </button>
-                        </>
-                      ) : (
-                        <div style={{ animation: "float 3s ease infinite" }}>
-                          <div style={{
-                            width: 64, height: 64, borderRadius: "50%", background: c.tealL, border: `1.5px solid ${c.tealB}`,
-                            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px"
-                          }}>🩻</div>
-                          <p style={{ color: c.text, fontSize: 14, margin: "0 0 5px", fontWeight: 600 }}>Drag & drop or click to upload</p>
-                          <p style={{ color: c.muted, fontSize: 12, margin: "0 0 16px" }}>JPG, PNG · MRI, CT, Dermoscopy, Histopathology</p>
-                          <span style={{
-                            fontSize: 11, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`,
-                            padding: "4px 14px", borderRadius: 100, fontWeight: 700
-                          }}>Browse Files</span>
-                        </div>
-                      )}
-                    </div>
-                    <input id="img-input" type="file" hidden accept="image/*" onChange={e => handleFile(e.target.files[0])} />
-
-                    <div style={{ marginTop: 18, padding: "14px 18px", background: c.bgAlt, border: `1px solid ${c.border}`, borderRadius: 12 }}>
-                      <p style={{ fontSize: 12, color: c.sub, margin: 0, lineHeight: 1.6 }}>
-                        <strong style={{ color: c.text }}>Supported modalities:</strong> MRI brain scans, CT abdomen/thorax, dermoscopy images, retinal fundus, and histopathology slides.
-                      </p>
-                    </div>
                   </div>
                 )}
               </div>
+            )}
 
-              <div style={{ padding: "0 28px 28px", display: "flex", flexDirection: "column", gap: 12 }}>
-                {loading && (
-                  <div style={{ animation: "fadeUp .3s ease" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
-                      <span style={{ fontSize: 12, color: c.teal, fontWeight: 700, display: "flex", alignItems: "center" }}>
-                        {phaseLabel[phase]}<Dots color={c.teal} />
-                      </span>
-                      <span style={{ fontSize: 12, color: c.teal, fontWeight: 700 }}>{phasePercent[phase]}%</span>
-                    </div>
-                    <div style={{ height: 5, background: c.border, borderRadius: 100, overflow: "hidden" }}>
-                      <div style={{
-                        height: 5, background: `linear-gradient(90deg,${c.teal},${c.blue})`,
-                        borderRadius: 100, transition: "width .6s ease",
-                        width: `${phasePercent[phase]}%`
-                      }} />
-                    </div>
-                  </div>
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 12 }}>
+              <button className="predict-btn" onClick={handlePredict} disabled={loading || !symptoms.trim()}>
+                {loading ? (
+                  <>
+                    <span style={{ width: 20, height: 20, border: "2.5px solid rgba(255,255,255,0.3)", borderTop: "2.5px solid #fff", borderRadius: "50%", animation: "spin .7s linear infinite", flexShrink: 0 }} />
+                    Analysing…
+                  </>
+                ) : (
+                  <>{image ? "Predict (Multimodal)" : "Predict Disease"}</>
                 )}
-
-                <div className="action-row" style={{ display: "flex", gap: 10 }}>
-                  <button className="predict-btn" onClick={handlePredict} disabled={loading} style={{
-                    flex: 1, background: loading ? `${c.teal}40` : c.teal,
-                    color: loading ? c.sub : "#fff", border: "none",
-                    padding: "15px 20px", borderRadius: 13, fontWeight: 800, fontSize: 15,
-                    cursor: loading ? "not-allowed" : "pointer",
-                    fontFamily: "'Inter',sans-serif", transition: "all .2s",
-                    boxShadow: loading ? "none" : `0 6px 20px ${c.teal}33`,
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                  }}>
-                    {loading ? (
-                      <>
-                        <span style={{ width: 17, height: 17, border: `2.5px solid ${c.teal}40`, borderTop: `2.5px solid ${c.teal}`, borderRadius: "50%", animation: "spin .8s linear infinite", display: "inline-block" }} />
-                        Analyzing<Dots color={c.teal} />
-                      </>
-                    ) : (
-                      <><span>🔍</span> Predict Disease</>
-                    )}
-                  </button>
-                  <button className="reset-btn" onClick={reset} style={{
-                    padding: "15px 20px", borderRadius: 13, border: `1.5px solid ${c.borderI}`,
-                    background: c.card, color: c.sub, cursor: "pointer",
-                    fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 600, transition: "all .15s",
-                  }}>Reset</button>
-                </div>
-
-                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                  {[
-                    image ? "🔬 Multimodal (Symptom + Image)" : "🧬 Symptom Model",
-                    "49 diseases",
-                    "TF-IDF + LR",
-                  ].map(t => (
-                    <span key={t} style={{
-                      fontSize: 11, color: c.sub, background: c.cardAlt, border: `1px solid ${c.border}`,
-                      padding: "4px 11px", borderRadius: 100, fontWeight: 500
-                    }}>{t}</span>
-                  ))}
-                </div>
-              </div>
+              </button>
+              {(symptoms || image || results) && (
+                <button className="reset-btn" onClick={handleReset}>Reset</button>
+              )}
             </div>
           </div>
 
-          {/* ══ RIGHT PANEL ══ */}
-          <div ref={resultsRef} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-            {loading && (
+          {/* ── OUTPUT PANEL ─────────────────────────────────────────── */}
+          <div style={{ animation: "fadeUp .4s ease .1s both" }}>
+            {!results && !loading && (
               <div style={{
-                background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, padding: 28,
-                boxShadow: "0 2px 16px rgba(0,0,0,0.04)", animation: "pulseBorder 2s ease infinite"
+                background: c.card, border: `1px solid ${c.border}`,
+                padding: "56px 32px", textAlign: "center",
               }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: c.tealL, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ width: 20, height: 20, border: `2.5px solid ${c.teal}30`, borderTop: `2.5px solid ${c.teal}`, borderRadius: "50%", animation: "spin .8s linear infinite", display: "inline-block" }} />
-                    </div>
-                    <div>
-                      <p style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 16, fontWeight: 800, color: c.text, margin: "0 0 2px" }}>
-                        {phaseLabel[phase]}<Dots color={c.teal} />
-                      </p>
-                      <p style={{ fontSize: 12, color: c.muted, margin: 0 }}>AI diagnostic engine active</p>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[0, .1, .2].map(d => <SkeletonCard key={d} delay={d} c={c} />)}
-                </div>
-              </div>
-            )}
-
-            {!loading && !submitted && (
-              <div style={{
-                background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, padding: "48px 28px",
-                textAlign: "center", boxShadow: "0 2px 16px rgba(0,0,0,0.04)", animation: "fadeUp .5s ease"
-              }}>
-                <div style={{
-                  width: 88, height: 88, borderRadius: "50%", background: c.tealL, border: `2px solid ${c.tealB}`,
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36,
-                  margin: "0 auto 20px", animation: "float 4s ease infinite"
-                }}>🧠</div>
-                <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 20, fontWeight: 800, color: c.text, margin: "0 0 8px" }}>
-                  Ready for Diagnosis
-                </h3>
-                <p style={{ fontSize: 14, color: c.sub, margin: "0 0 24px", lineHeight: 1.7, maxWidth: 280, marginLeft: "auto", marginRight: "auto" }}>
-                  Enter symptoms on the left. Add a scan for multimodal analysis.
+                <VitalLine color={c.teal} width={100} height={22} />
+                <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 21, fontWeight: 600, color: c.text, margin: "22px 0 10px" }}>Ready for Diagnosis</h3>
+                <p style={{ fontSize: 14, color: c.sub, margin: "0 0 28px", lineHeight: 1.65 }}>
+                  Enter symptoms on the left, optionally upload a scan, then hit Predict.
                 </p>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  {["49 rare diseases", "Confidence scoring", "Top-3 ranking"].map(f => (
-                    <span key={f} style={{
-                      fontSize: 12, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`,
-                      padding: "5px 14px", borderRadius: 100, fontWeight: 600
-                    }}>✓ {f}</span>
+                <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+                  {["62 rare diseases", "Confidence scoring", "Top-5 ranking"].map(s => (
+                    <span key={s} style={{ fontSize: 12, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`, padding: "6px 14px", borderRadius: 100, fontWeight: 600 }}>{s}</span>
                   ))}
                 </div>
               </div>
             )}
 
-            {!loading && submitted && results.length === 0 && (
-              <div style={{
-                background: c.card, border: `1px solid ${c.redB}`, borderRadius: 24, padding: "40px 28px",
-                textAlign: "center", animation: "fadeUp .4s ease"
-              }}>
-                <div style={{ fontSize: 40, marginBottom: 14 }}>⚠️</div>
-                <p style={{ fontSize: 16, color: c.sub, fontWeight: 600, margin: "0 0 6px" }}>No results returned</p>
-                <p style={{ fontSize: 13, color: c.muted, margin: 0 }}>Check your API connection and try again.</p>
+            {loading && (
+              <div style={{ background: c.card, border: `1px solid ${c.border}`, padding: "56px 32px", textAlign: "center" }}>
+                <div style={{ position: "relative", width: 60, height: 60, margin: "0 auto 24px" }}>
+                  <div style={{ position: "absolute", inset: 0, border: `2px solid ${c.border}`, borderTop: `2px solid ${c.teal}`, borderRadius: "50%", animation: "spin .9s linear infinite" }} />
+                  <div style={{ position: "absolute", inset: 10, border: `2px solid ${c.border}`, borderTop: `2px solid ${c.blue}`, borderRadius: "50%", animation: "spin 1.5s linear infinite reverse" }} />
+                </div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: c.text, margin: "0 0 6px" }}>Analysing…</p>
+                <p style={{ fontSize: 12.5, color: c.muted, margin: 0 }}>Running {image ? "multimodal fusion" : "symptom analysis"}</p>
               </div>
             )}
 
-            {!loading && results.length > 0 && (
-              <>
+            {results && (
+              <div style={{ animation: "fadeUp .4s ease" }}>
+                {/* Mode + summary bar */}
                 <div style={{
-                  background: `linear-gradient(135deg,${c.tealL} 0%,${c.blueL} 100%)`,
-                  border: `1.5px solid ${c.tealB}`, borderRadius: 24, padding: "26px 28px",
-                  animation: "slideRight .5s ease", boxShadow: `0 4px 20px ${c.teal}18`
+                  background: results.mode === "multimodal_fusion"
+                    ? `linear-gradient(135deg,${c.tealL},${c.blueL})`
+                    : c.tealL,
+                  border: `1px solid ${c.tealB}`, borderTop: `2px solid ${c.teal}`,
+                  padding: "20px 22px", marginBottom: 20,
+                  display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12,
                 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: c.teal, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🥇</div>
-                      <div>
-                        <p style={{ fontSize: 10, color: c.teal, letterSpacing: 1.2, textTransform: "uppercase", margin: "0 0 1px", fontWeight: 800 }}>Top Diagnosis</p>
-                        <p style={{ fontSize: 11, color: c.sub, margin: 0 }}>Highest probability match</p>
-                      </div>
-                    </div>
-                    <ConfBadge conf={results[0].confidence} c={c} />
-                  </div>
-                  <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 24, fontWeight: 800, color: c.text, margin: "0 0 16px", letterSpacing: -.3 }}>
-                    {results[0].disease}
-                  </h3>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 40, fontWeight: 800, color: c.teal, animation: "countUp .6s ease" }}>
-                      {results[0].probability}%
+                  <div>
+                    <span className="eyebrow" style={{ marginBottom: 8, display: "inline-flex" }}>
+                      {results.mode === "multimodal_fusion" ? "Multimodal Fusion" : "Symptom Analysis"}
                     </span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ height: 8, background: `${c.teal}25`, borderRadius: 100, overflow: "hidden" }}>
-                        <div style={{
-                          height: 8, width: `${results[0].probability}%`, background: c.teal,
-                          borderRadius: 100, animation: "barGrow .9s ease"
-                        }} />
-                      </div>
-                      <p style={{ fontSize: 11, color: c.sub, margin: "5px 0 0", fontWeight: 500 }}>Match probability</p>
+                    <div style={{ fontFamily: "'Fraunces',serif", fontSize: 19, fontWeight: 600, color: c.text, marginTop: 8 }}>
+                      {results.predictions[0]?.disease}
                     </div>
                   </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
-                  <StatPill icon="🔢" label="Matches" value={results.length} color={c.teal} bg={c.tealL} border={c.tealB} />
-                  <StatPill icon="📊" label="Top Prob" value={`${results[0].probability}%`} color={c.blue} bg={c.blueL} border={c.blueB} />
-                  <StatPill icon="🎯" label="Confidence" value={results[0].confidence} color={c.purple} bg={c.purpL} border={c.purpB} />
-                </div>
-
-                <div style={{
-                  background: c.card, border: `1px solid ${c.border}`, borderRadius: 24, overflow: "hidden",
-                  boxShadow: "0 2px 16px rgba(0,0,0,0.04)"
-                }}>
-                  <div style={{
-                    padding: "18px 24px", background: c.bgAlt, borderBottom: `1px solid ${c.border}`,
-                    display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8
-                  }}>
-                    <h3 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 15, fontWeight: 700, margin: 0, color: c.text }}>All Predictions</h3>
-                    <span style={{
-                      fontSize: 11, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`,
-                      padding: "3px 11px", borderRadius: 100, fontWeight: 700
-                    }}>Ranked by probability</span>
-                  </div>
-                  <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                    {results.map((item, i) => {
-                      const p = PALETTE[i % PALETTE.length];
-                      return (
-                        <div key={i} className="result-row" style={{
-                          animationDelay: `${i * 0.08}s`, border: `1px solid ${p.border}`,
-                          borderRadius: 16, padding: "16px 18px", background: c.card, transition: "box-shadow .2s, transform .15s",
-                        }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                              <span style={{
-                                fontSize: 10, fontWeight: 800, background: p.light, color: p.text,
-                                border: `1px solid ${p.border}`, padding: "3px 9px", borderRadius: 7
-                              }}>#{item.rank}</span>
-                              <span style={{ fontWeight: 700, fontSize: 14, color: c.text }}>{item.disease}</span>
-                            </div>
-                            <ConfBadge conf={item.confidence} c={c} />
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: c.muted, marginBottom: 7 }}>
-                            <span>Probability</span>
-                            <span style={{ color: p.text, fontWeight: 800 }}>{item.probability}%</span>
-                          </div>
-                          <div style={{ height: 5, background: c.border, borderRadius: 100, overflow: "hidden" }}>
-                            <div style={{
-                              height: 5, width: `${item.probability}%`, background: p.bar,
-                              borderRadius: 100, animation: "barGrow .8s ease"
-                            }} />
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 30, fontWeight: 600, color: c.teal, lineHeight: 1 }}>
+                      {results.predictions[0]?.probability}%
+                    </div>
+                    <div style={{ fontSize: 11, color: c.muted, fontWeight: 500, marginTop: 4 }}>Top match probability</div>
                   </div>
                 </div>
 
-                <div style={{ padding: "14px 18px", background: c.ambL, border: `1px solid ${c.ambB}`, borderRadius: 14 }}>
-                  <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.65 }}>
-                    <strong>⚠ Clinical Disclaimer:</strong> These predictions are AI-generated for research purposes only. Always consult a licensed clinician before making diagnostic or treatment decisions.
+                {/* Cards */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {results.predictions.map(p => (
+                    <PredictionCard key={p.rank} item={p} />
+                  ))}
+                </div>
+
+                {/* Disclaimer */}
+                <div style={{ marginTop: 18, padding: "13px 16px", background: c.ambL, border: `1px solid ${c.ambB}` }}>
+                  <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.6 }}>
+                    <strong>⚠ Research use only.</strong> These predictions are AI-generated and should not substitute clinical judgement. Always consult a licensed clinician.
                   </p>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -667,5 +390,3 @@ function Predict() {
     </div>
   );
 }
-
-export default Predict;
