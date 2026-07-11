@@ -28,7 +28,6 @@ export default function HistoryDrawer({ item, onClose }) {
     return (
         <>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500;600&display=swap');
         @keyframes drawerIn    { from{opacity:0} to{opacity:1} }
         @keyframes drawerSlide { from{transform:translateX(100%)} to{transform:translateX(0)} }
         @media(max-width:600px){

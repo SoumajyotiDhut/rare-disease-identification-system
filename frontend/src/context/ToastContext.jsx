@@ -53,7 +53,6 @@ function ToastViewport({ toasts, remove }) {
             maxWidth: "calc(100vw - 40px)", width: 360,
         }}>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap');
         @keyframes toastIn  { from{opacity:0;transform:translateX(30px) scale(.97)} to{opacity:1;transform:translateX(0) scale(1)} }
         @media(max-width:600px){
           .toast-viewport { left:16px!important; right:16px!important; width:auto!important; top:auto!important; bottom:16px!important }

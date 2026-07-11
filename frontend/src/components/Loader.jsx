@@ -9,7 +9,6 @@ export default function Loader({ message = "Loading…" }) {
             flexDirection: "column", gap: 26, fontFamily: "'Inter',sans-serif",
         }}>
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@500&display=swap');
         @keyframes spin     { to{transform:rotate(360deg)} }
         @keyframes spinRev  { to{transform:rotate(-360deg)} }
         @keyframes pulse    { 0%,100%{opacity:.5;transform:scale(.95)} 50%{opacity:1;transform:scale(1.05)} }

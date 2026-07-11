@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500;600&display=swap');
   .fl:hover  { opacity:.75!important }
   .fnl:hover { color:#94A3B8!important }
   @media(max-width:768px){

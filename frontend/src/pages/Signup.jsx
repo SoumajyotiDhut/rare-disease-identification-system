@@ -5,7 +5,6 @@ import { useToast } from "../context/ToastContext";
 import { signUpWithEmail, signInWithGoogle, getAuthErrorMessage } from "../firebase";
 
 const CSS = (c) => `
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
   @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
   @keyframes spin   { to{transform:rotate(360deg)} }
   @keyframes pulse  { 0%,100%{opacity:.35;transform:scale(1)} 50%{opacity:.6;transform:scale(1.04)} }
