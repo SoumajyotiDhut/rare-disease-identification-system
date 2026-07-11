@@ -99,6 +99,18 @@ const NAV_LINKS = [
   { path: "/history", label: "History" },
 ];
 
+const IconSun = () => (
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+    <circle cx="10" cy="10" r="4" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M10 1.5V4M10 16v2.5M3.5 10H1M19 10h-2.5M5.05 5.05L3.3 3.3M16.7 16.7l-1.75-1.75M5.05 14.95L3.3 16.7M16.7 3.3l-1.75 1.75" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+    <path d="M17 11.5A7 7 0 018.5 3 7.5 7.5 0 1017 11.5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+  </svg>
+);
+
 export default function Navbar() {
   const { dark, setDark, c } = useTheme();
   const { user, authLoading, logout } = useAuth();
@@ -206,7 +218,7 @@ export default function Navbar() {
           {/* Right controls */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <button className="theme-btn" onClick={() => setDark(!dark)} aria-label="Toggle theme">
-              {dark ? "☀️" : "🌙"}
+              {dark ? <IconSun /> : <IconMoon />}
             </button>
 
             {!authLoading && (
@@ -290,7 +302,7 @@ export default function Navbar() {
               <span style={{ fontSize: 11.5, color: c.muted, fontFamily: "'IBM Plex Mono',monospace", letterSpacing: "0.05em" }}>
                 {time}
               </span>
-              <button className="theme-btn" onClick={() => setDark(!dark)}>{dark ? "☀️" : "🌙"}</button>
+              <button className="theme-btn" onClick={() => setDark(!dark)}>{dark ? <IconSun /> : <IconMoon />}</button>
             </div>
           </div>
         )}

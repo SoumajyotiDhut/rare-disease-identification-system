@@ -42,6 +42,13 @@ function ConfBadge({ conf, c }) {
   return <span style={{ padding: "4px 12px", borderRadius: 100, fontSize: 10, fontWeight: 700, background: s.bg, color: s.col, border: `1px solid ${s.b}`, textTransform: "uppercase", letterSpacing: .6 }}>{conf || "—"}</span>;
 }
 
+const IconSearch = ({ color }) => (
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+    <circle cx="9" cy="9" r="6.5" stroke={color} strokeWidth="1.6" />
+    <path d="M18 18l-4-4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
 function History() {
   const { c } = useTheme();
   const toast = useToast();
@@ -112,7 +119,7 @@ function History() {
 
         <div className="ctrl-row" style={{ display: "flex", gap: 10, marginBottom: 18, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-            <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: c.muted, pointerEvents: "none" }}>🔍</span>
+            <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}><IconSearch color={c.muted} /></span>
             <input type="text" placeholder="Search disease name…" value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               style={{ width: "100%", background: c.card, border: `1px solid ${c.borderI}`, borderRadius: 4, padding: "11px 14px 11px 38px", color: c.text, fontSize: 14, outline: "none", fontFamily: "'Inter',sans-serif", boxSizing: "border-box", transition: "border-color .2s, box-shadow .2s" }}

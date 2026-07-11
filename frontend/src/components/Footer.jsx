@@ -5,7 +5,6 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500;600&display=swap');
   .fl:hover  { opacity:.75!important }
   .fnl:hover { color:#94A3B8!important }
-  .fi-btn:hover { border-color:rgba(203,175,116,0.45)!important }
   @media(max-width:768px){
     .fg  { grid-template-columns:1fr 1fr!important }
     .fp  { padding:48px 24px 28px!important }
@@ -41,14 +40,15 @@ export default function Footer() {
                             AI-powered multimodal rare disease identification built on 36,487 real patient cases from ZebraMap.
                         </p>
                         <div style={{ display: "flex", gap: 8 }}>
-                            {[{ ic: "🔬", label: "Research" }, { ic: "🧬", label: "AI" }, { ic: "🩺", label: "Clinical" }].map(({ ic, label }) => (
-                                <button key={label} className="fi-btn" title={label} style={{
-                                    width: 36, height: 36, borderRadius: 4,
+                            {[{ ic: "R", label: "Research" }, { ic: "AI", label: "Machine Learning" }, { ic: "C", label: "Clinical" }].map(({ ic, label }) => (
+                                <div key={label} title={label} style={{
+                                    height: 30, borderRadius: 4, padding: "0 12px",
                                     background: "rgba(255,255,255,0.04)",
                                     border: "1px solid rgba(255,255,255,0.08)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 16, cursor: "pointer", transition: "border-color .2s",
-                                }}>{ic}</button>
+                                    fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, fontWeight: 600,
+                                    color: "#8A93A3", letterSpacing: "0.04em",
+                                }}>{ic}</div>
                             ))}
                         </div>
                     </div>
@@ -96,9 +96,12 @@ export default function Footer() {
                         © 2026 AI DOC · Built for PROJ-IT781 · Techno Main Salt Lake, Kolkata
                     </p>
                     <div className="flinks" style={{ display: "flex", gap: 20 }}>
-                        {["Privacy", "Terms", "Contact"].map(l => (
-                            <a key={l} href="#" className="fl" style={{ fontSize: 12, color: "#1E293B", textDecoration: "none", transition: "opacity .15s" }}>{l}</a>
-                        ))}
+                        {/* TODO: Privacy/Terms currently point nowhere (#) — either build
+                            those pages/routes or remove them if not needed for an academic project */}
+                        <a href="#" className="fl" style={{ fontSize: 12, color: "#1E293B", textDecoration: "none", transition: "opacity .15s" }}>Privacy</a>
+                        <a href="#" className="fl" style={{ fontSize: 12, color: "#1E293B", textDecoration: "none", transition: "opacity .15s" }}>Terms</a>
+                        {/* TODO: replace with your real contact email */}
+                        <a href="mailto:contact@aidoc.example" className="fl" style={{ fontSize: 12, color: "#1E293B", textDecoration: "none", transition: "opacity .15s" }}>Contact</a>
                     </div>
                 </div>
             </div>

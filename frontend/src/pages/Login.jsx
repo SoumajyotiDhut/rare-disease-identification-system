@@ -78,6 +78,18 @@ function VitalLine({ color = "rgba(255,255,255,0.5)", width = 100, height = 20 }
     );
 }
 
+const IconEye = ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+        <path d="M1 10s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+        <circle cx="10" cy="10" r="2.6" stroke={color} strokeWidth="1.6" />
+    </svg>
+);
+const IconEyeOff = ({ color }) => (
+    <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+        <path d="M2.5 2.5l15 15M8.3 8.4a2.6 2.6 0 003.4 3.4M5.3 5.5C3 7 1 10 1 10s3 6 9 6c1.5 0 2.8-.4 3.9-.9M12.5 4.4C11.7 4.1 10.9 4 10 4c-1 0-1.9.16-2.7.44M14.9 6.2C17 7.7 19 10 19 10s-.7 1.4-2 2.9" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
 export default function Login() {
     const { c } = useTheme();
     const toast = useToast();
@@ -261,7 +273,7 @@ export default function Login() {
                                     background: "none", border: "none", cursor: "pointer",
                                     color: c.muted, fontSize: 16, padding: 0, lineHeight: 1,
                                 }}>
-                                    {showPass ? "🙈" : "👁"}
+                                    {showPass ? <IconEyeOff color={c.muted} /> : <IconEye color={c.muted} />}
                                 </button>
                             </div>
                         </div>

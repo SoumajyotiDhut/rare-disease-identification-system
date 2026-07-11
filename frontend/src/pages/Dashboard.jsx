@@ -74,6 +74,13 @@ function VitalLine({ color, width = 90, height = 20 }) {
   );
 }
 
+const IconAlert = ({ color }) => (
+  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M10 2.5L18.5 17H1.5L10 2.5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M10 8v4M10 14.5v.1" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
 function Skeleton({ w = "100%", h = 14 }) {
   return <div className="skeleton" style={{ width: w, height: h, borderRadius: 3 }} />;
 }
@@ -168,7 +175,7 @@ export default function Dashboard() {
 
         {err && (
           <div style={{ background: c.redL, border: `1px solid ${c.redB}`, padding: "16px 20px", marginBottom: 40, display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 18 }}>⚠</span>
+            <IconAlert color={c.red} />
             <p style={{ fontSize: 13.5, color: c.red, margin: 0, fontWeight: 500 }}>
               Couldn't reach the analytics endpoint. Showing model benchmark data only.
             </p>
@@ -308,9 +315,10 @@ export default function Dashboard() {
         </div>
 
         {/* Disclaimer */}
-        <div style={{ marginTop: 40, padding: "14px 18px", background: c.ambL, border: `1px solid ${c.ambB}` }}>
+        <div style={{ marginTop: 40, padding: "14px 18px", background: c.ambL, border: `1px solid ${c.ambB}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ marginTop: 2 }}><IconAlert color={c.amber} /></div>
           <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.6 }}>
-            <strong>⚠ Research use only.</strong> Benchmark figures reflect offline evaluation on the ZebraMap test split and may not generalize to all populations.
+            <strong>Research use only.</strong> Benchmark figures reflect offline evaluation on the ZebraMap test split and may not generalize to all populations.
           </p>
         </div>
       </div>

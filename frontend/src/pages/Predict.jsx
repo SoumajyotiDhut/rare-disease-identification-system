@@ -99,6 +99,31 @@ function VitalLine({ color, width = 70, height = 18 }) {
   );
 }
 
+const IconCheck = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+    <path d="M4 10.5l4 4 8-9" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const IconScan = ({ color }) => (
+  <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+    <path d="M6 3H4a1 1 0 00-1 1v2M28 3h2a1 1 0 011 1v2M6 31H4a1 1 0 01-1-1v-2M28 31h2a1 1 0 001-1v-2" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+    <rect x="10" y="9" width="14" height="16" rx="1.5" stroke={color} strokeWidth="1.6" />
+    <path d="M13 14h8M13 18h8M13 22h5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+const IconInfo = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="10" cy="10" r="7.5" stroke={color} strokeWidth="1.6" />
+    <path d="M10 9v5M10 6.2v.1" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+const IconAlert = ({ color }) => (
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M10 2.5L18.5 17H1.5L10 2.5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M10 8v4M10 14.5v.1" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
 export default function Predict() {
   const { c } = useTheme();
   const toast = useToast();
@@ -262,7 +287,7 @@ export default function Predict() {
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>✕</button>
                     <div style={{ padding: "12px 16px", background: c.tealL, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 13 }}>✅</span>
+                      <IconCheck color={c.teal} />
                       <span style={{ fontSize: 12.5, color: c.teal, fontWeight: 600 }}>{image?.name}</span>
                     </div>
                   </div>
@@ -273,7 +298,7 @@ export default function Predict() {
                     onDragLeave={() => setDrag(false)}
                     onDrop={handleDrop}
                   >
-                    <div style={{ fontSize: 36, marginBottom: 14 }}>🩻</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}><IconScan color={c.muted} /></div>
                     <p style={{ fontFamily: "'Fraunces',serif", fontSize: 16, fontWeight: 600, color: c.text, margin: "0 0 6px" }}>Drop scan here or click to browse</p>
                     <p style={{ fontSize: 12.5, color: c.muted, margin: 0 }}>MRI · CT · Fundus · Dermoscopy · Histopathology · X-ray</p>
                     <p style={{ fontSize: 11.5, color: c.muted, margin: "8px 0 0" }}>PNG, JPG, JPEG · Max 10 MB</p>
@@ -284,9 +309,10 @@ export default function Predict() {
                   onChange={e => handleFile(e.target.files[0])} />
 
                 {!image && (
-                  <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 4, background: c.blueL, border: `1px solid ${c.blueB}` }}>
+                  <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 4, background: c.blueL, border: `1px solid ${c.blueB}`, display: "flex", alignItems: "center", gap: 8 }}>
+                    <IconInfo color={c.blue} />
                     <p style={{ fontSize: 12, color: c.blue, margin: 0, fontWeight: 500 }}>
-                      ℹ️ Optional — system falls back to symptom-only mode if no image is provided.
+                      Optional — system falls back to symptom-only mode if no image is provided.
                     </p>
                   </div>
                 )}
@@ -377,9 +403,10 @@ export default function Predict() {
                 </div>
 
                 {/* Disclaimer */}
-                <div style={{ marginTop: 18, padding: "13px 16px", background: c.ambL, border: `1px solid ${c.ambB}` }}>
+                <div style={{ marginTop: 18, padding: "13px 16px", background: c.ambL, border: `1px solid ${c.ambB}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <div style={{ marginTop: 2 }}><IconAlert color={c.amber} /></div>
                   <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.6 }}>
-                    <strong>⚠ Research use only.</strong> These predictions are AI-generated and should not substitute clinical judgement. Always consult a licensed clinician.
+                    <strong>Research use only.</strong> These predictions are AI-generated and should not substitute clinical judgement. Always consult a licensed clinician.
                   </p>
                 </div>
               </div>

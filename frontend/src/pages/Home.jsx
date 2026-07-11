@@ -158,6 +158,7 @@ export default function Home() {
   const { c } = useTheme();
   const { user } = useAuth();
   const [analytics, setAnalytics] = useState(null);
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   useEffect(() => {
     getAnalytics().then(setAnalytics).catch(() => { });
@@ -223,12 +224,15 @@ export default function Home() {
 
               <div style={{ height: 1, background: c.border, maxWidth: 480, marginBottom: 28 }} />
 
-              {/* Mini stats */}
+              {/* Mini stats — third stat shows real live usage once analytics loads,
+                  otherwise falls back to a real static dataset fact (never a fabricated number) */}
               <div className="mini-stats" style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
                 {[
                   { val: "58.39%", label: "Top-1 Fusion Acc." },
                   { val: "83.87%", label: "Top-5 Accuracy" },
-                  { val: analytics?.total_predictions || "1K+", label: "Predictions Made" },
+                  analytics?.total_predictions
+                    ? { val: Number(analytics.total_predictions).toLocaleString(), label: "Predictions Made" }
+                    : { val: "1,374", label: "Diseases Modeled" },
                 ].map(({ val, label }) => (
                   <div key={label}>
                     <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 21, fontWeight: 600, color: c.text, letterSpacing: "-0.01em" }}>{val}</div>
@@ -243,7 +247,7 @@ export default function Home() {
               <div style={{
                 background: c.card, border: `1px solid ${c.border}`,
                 borderTop: `2px solid ${c.teal}`,
-                borderRadius: 6, padding: "36px 32px 30px", boxShadow: c.shadowXl,
+                borderRadius: 6, padding: "36px 32px 34px", boxShadow: c.shadowXl,
                 position: "relative", overflow: "hidden",
               }}>
                 {/* Faint dot-grid backdrop behind the illustration */}
@@ -260,61 +264,136 @@ export default function Home() {
                     <VitalLine color={c.teal} width={70} height={18} />
                   </div>
 
-                  {/* Line-art clinician illustration */}
-                  <svg viewBox="0 0 360 340" width="100%" height="auto" style={{ display: "block", margin: "10px 0 4px" }}>
-                    {/* soft halo */}
-                    <circle cx="180" cy="150" r="128" fill={c.tealL} opacity="0.5" />
+                  {/* Clinician photo — expects file at /public/assets/doctor.jpg
+                      (falls back to the line illustration automatically if missing) */}
+                  {!photoFailed ? (
+                    <div style={{
+                      position: "relative", width: "100%", aspectRatio: "9 / 10",
+                      borderRadius: 4, overflow: "hidden", margin: "8px 0 4px",
+                      background: c.bgDeep,
+                    }}>
+                      <img
+                        src="/assets/doctor.jpg"
+                        alt="Clinician reviewing an AI-assisted diagnostic report"
+                        onError={() => setPhotoFailed(true)}
+                        style={{
+                          width: "100%", height: "100%", objectFit: "cover",
+                          display: "block", filter: "grayscale(12%) contrast(1.05) saturate(1.04)",
+                        }}
+                      />
+                      {/* brand-tint wash so the photo sits inside the teal/gold palette */}
+                      <div style={{
+                        position: "absolute", inset: 0, pointerEvents: "none",
+                        background: `linear-gradient(180deg, transparent 55%, ${c.teal}30 100%)`,
+                        mixBlendMode: "multiply",
+                      }} />
+                      <div style={{
+                        position: "absolute", inset: 0, pointerEvents: "none",
+                        boxShadow: `inset 0 0 0 1px ${c.borderI}`,
+                      }} />
+                    </div>
+                  ) : (
+                    <svg viewBox="0 0 360 400" width="100%" height="auto" style={{ display: "block", margin: "8px 0 4px" }}>
+                      <defs>
+                        <radialGradient id="docHalo" cx="50%" cy="42%" r="60%">
+                          <stop offset="0%" stopColor={c.teal} stopOpacity="0.16" />
+                          <stop offset="100%" stopColor={c.teal} stopOpacity="0" />
+                        </radialGradient>
+                        <linearGradient id="docFace" x1="0.15" y1="0" x2="0.9" y2="1">
+                          <stop offset="0%" stopColor="#EAF6F3" />
+                          <stop offset="60%" stopColor="#BFE0D8" />
+                          <stop offset="100%" stopColor="#5FA79A" />
+                        </linearGradient>
+                        <linearGradient id="docCoat" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FFFFFF" />
+                          <stop offset="100%" stopColor="#D9E5E2" />
+                        </linearGradient>
+                        <linearGradient id="docHair" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#1D343D" />
+                          <stop offset="100%" stopColor="#0E1A20" />
+                        </linearGradient>
+                      </defs>
 
-                    {/* coat / shoulders */}
-                    <path
-                      d="M70 320 C70 250 110 205 152 196 L152 178 C138 168 130 150 130 128 C130 90 152 62 180 62 C208 62 230 90 230 128 C230 150 222 168 208 178 L208 196 C250 205 290 250 290 320"
-                      fill="none" stroke={c.teal} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                    />
-                    {/* collar */}
-                    <path d="M152 196 L180 224 L208 196" fill="none" stroke={c.teal} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    {/* lapel lines */}
-                    <path d="M160 200 L146 260" fill="none" stroke={c.borderI} strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M200 200 L214 260" fill="none" stroke={c.borderI} strokeWidth="1.5" strokeLinecap="round" />
+                      {/* ambient halo */}
+                      <ellipse cx="180" cy="170" rx="170" ry="170" fill="url(#docHalo)" />
 
-                    {/* face detail (minimal) */}
-                    <path d="M158 118 Q180 108 202 118" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
-                    <circle cx="164" cy="132" r="2.2" fill={c.muted} opacity="0.55" />
-                    <circle cx="196" cy="132" r="2.2" fill={c.muted} opacity="0.55" />
-                    <path d="M172 152 Q180 158 188 152" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
+                      {/* coat + shoulders */}
+                      <path
+                        d="M38 402 C38 314 82 254 136 236 L136 206 L224 206 L224 236 C278 254 322 314 322 402 Z"
+                        fill="url(#docCoat)" stroke="#A9C2BC" strokeWidth="1.4" strokeLinejoin="round"
+                      />
+                      {/* v-neck collar */}
+                      <path d="M136 206 L180 252 L224 206" fill="none" stroke="#9FB8B2" strokeWidth="1.6" strokeLinejoin="round" />
+                      <path d="M158 210 L180 244 L202 210 Z" fill="#EDF3F1" />
+                      {/* lapel fold lines */}
+                      <path d="M152 212 L134 296" stroke="#B9CCC7" strokeWidth="1.2" strokeLinecap="round" />
+                      <path d="M208 212 L226 296" stroke="#B9CCC7" strokeWidth="1.2" strokeLinecap="round" />
+                      {/* breast pocket + pen */}
+                      <rect x="150" y="266" width="27" height="21" rx="2" fill="none" stroke="#B9CCC7" strokeWidth="1.3" />
+                      <line x1="159" y1="266" x2="157" y2="246" stroke={c.gold} strokeWidth="2.2" strokeLinecap="round" />
+                      {/* front buttons */}
+                      <circle cx="180" cy="300" r="2.6" fill="#B9CCC7" />
+                      <circle cx="180" cy="332" r="2.6" fill="#B9CCC7" />
+                      <circle cx="180" cy="364" r="2.6" fill="#B9CCC7" />
 
-                    {/* stethoscope */}
-                    <path
-                      d="M150 210 C150 236 158 250 180 250 C202 250 210 236 210 210"
-                      fill="none" stroke={c.gold} strokeWidth="2.5" strokeLinecap="round"
-                    />
-                    <circle cx="180" cy="256" r="7" fill="none" stroke={c.gold} strokeWidth="2.5" />
-                    <circle cx="150" cy="208" r="3.5" fill={c.gold} />
-                    <circle cx="210" cy="208" r="3.5" fill={c.gold} />
+                      {/* neck */}
+                      <path d="M160 188 L160 222 Q180 232 200 222 L200 188 Z" fill="url(#docFace)" />
 
-                    {/* rank/vital accent marks */}
-                    <path d="M40 300 H90 M270 300 H320" stroke={c.border} strokeWidth="2" strokeLinecap="round" />
-                  </svg>
+                      {/* ears */}
+                      <ellipse cx="126" cy="150" rx="7.5" ry="13" fill="url(#docFace)" stroke="#5FA79A" strokeWidth="0.8" />
+                      <ellipse cx="234" cy="150" rx="7.5" ry="13" fill="url(#docFace)" stroke="#5FA79A" strokeWidth="0.8" />
 
-                  <div style={{ textAlign: "center", marginTop: 6 }}>
+                      {/* face */}
+                      <path
+                        d="M180 76 C210 76 230 102 230 138 C230 168 220 192 202 206 C194 212 187 214 180 214 C173 214 166 212 158 206 C140 192 130 168 130 138 C130 102 150 76 180 76 Z"
+                        fill="url(#docFace)" stroke="#5FA79A" strokeWidth="1"
+                      />
+                      {/* subtle cheek/jaw shading */}
+                      <path d="M150 172 Q160 196 180 206" fill="none" stroke="#3F8C7E" strokeWidth="1" opacity="0.35" strokeLinecap="round" />
+
+                      {/* hair — short, professional, side part */}
+                      <path
+                        d="M129 136 C127 96 150 66 180 66 C210 66 233 96 231 136 C231 118 224 104 214 98 C206 94 200 100 192 96 C185 93 182 98 175 95 C167 92 160 97 152 96 C140 98 129 112 129 136 Z"
+                        fill="url(#docHair)" stroke={c.teal} strokeWidth="0.8" strokeLinejoin="round"
+                      />
+                      {/* sideburns */}
+                      <path d="M132 118 C129 128 128 138 129 148" fill="none" stroke="#0E1A20" strokeWidth="6" strokeLinecap="round" />
+                      <path d="M228 118 C231 128 232 138 231 148" fill="none" stroke="#0E1A20" strokeWidth="6" strokeLinecap="round" />
+
+                      {/* eyebrows */}
+                      <path d="M152 132 Q162 125 173 130" fill="none" stroke="#1D343D" strokeWidth="2.6" strokeLinecap="round" />
+                      <path d="M187 130 Q198 125 208 132" fill="none" stroke="#1D343D" strokeWidth="2.6" strokeLinecap="round" />
+
+                      {/* eyes */}
+                      <path d="M155 145 Q163 141 171 145" fill="none" stroke="#1D343D" strokeWidth="2.2" strokeLinecap="round" />
+                      <path d="M189 145 Q197 141 205 145" fill="none" stroke="#1D343D" strokeWidth="2.2" strokeLinecap="round" />
+
+                      {/* nose shadow */}
+                      <path d="M180 150 L175 174 Q180 179 185 174" fill="none" stroke="#3F8C7E" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
+
+                      {/* calm confident mouth */}
+                      <path d="M162 187 Q180 196 198 187" fill="none" stroke="#1D343D" strokeWidth="2.4" strokeLinecap="round" />
+
+                      {/* stethoscope draped over shoulders */}
+                      <path
+                        d="M146 214 C146 246 156 262 180 262 C204 262 214 246 214 214"
+                        fill="none" stroke={c.gold} strokeWidth="3" strokeLinecap="round"
+                      />
+                      <circle cx="146" cy="212" r="4.5" fill={c.gold} />
+                      <circle cx="214" cy="212" r="4.5" fill={c.gold} />
+                      <path d="M180 262 L180 284" stroke={c.gold} strokeWidth="3" strokeLinecap="round" />
+                      <circle cx="180" cy="294" r="10" fill="none" stroke={c.gold} strokeWidth="3" />
+                      <circle cx="180" cy="294" r="4" fill={c.gold} opacity="0.4" />
+                    </svg>
+                  )}
+
+                  <div style={{ textAlign: "center", marginTop: 4 }}>
                     <p style={{ fontFamily: "'Fraunces',serif", fontSize: 17, fontWeight: 600, color: c.text, margin: "0 0 6px", letterSpacing: "-0.01em" }}>
                       Built alongside clinical judgment
                     </p>
                     <p style={{ fontSize: 13, color: c.sub, margin: "0 auto", maxWidth: 300, lineHeight: 1.65 }}>
                       AI DOC ranks differential diagnoses for review — it supports the clinician, it doesn't replace them.
                     </p>
-                  </div>
-
-                  <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 22, paddingTop: 20, borderTop: `1px solid ${c.border}` }}>
-                    {[
-                      { val: "62", label: "Tracked Diseases" },
-                      { val: "5", label: "Scan Modalities" },
-                      { val: "24/7", label: "Availability" },
-                    ].map(({ val, label }) => (
-                      <div key={label} style={{ textAlign: "center" }}>
-                        <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 16, fontWeight: 600, color: c.teal }}>{val}</div>
-                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 600, marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

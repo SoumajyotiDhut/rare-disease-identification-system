@@ -48,6 +48,19 @@ const Spinner = () => (
     <span style={{ width: 18, height: 18, border: "2.5px solid rgba(255,255,255,0.35)", borderTop: "2.5px solid #fff", borderRadius: "50%", animation: "spin .7s linear infinite", display: "inline-block", flexShrink: 0 }} />
 );
 
+const IconMail = ({ color }) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="2.5" y="5" width="19" height="14" rx="2" stroke={color} strokeWidth="1.6" />
+        <path d="M3.5 6.5L12 13l8.5-6.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+const IconKey = ({ color }) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="8" cy="15" r="4" stroke={color} strokeWidth="1.6" />
+        <path d="M11 12l9-9M17 6l2.5 2.5M13.8 9.2l2 2" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
 export default function ForgotPassword() {
     const { c } = useTheme();
     const toast = useToast();
@@ -90,7 +103,7 @@ export default function ForgotPassword() {
                                 background: c.tealL, border: `1.5px solid ${c.tealB}`,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 fontSize: 30, margin: "0 auto 24px",
-                            }}>✉️</div>
+                            }}><IconMail color={c.teal} /></div>
 
                             <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 25, fontWeight: 600, color: c.text, margin: "0 0 12px", letterSpacing: "-0.02em" }}>
                                 Check your inbox
@@ -118,7 +131,7 @@ export default function ForgotPassword() {
                                     width: 48, height: 48, borderRadius: 4, background: c.tealL,
                                     border: `1px solid ${c.tealB}`, display: "flex", alignItems: "center",
                                     justifyContent: "center", fontSize: 22, marginBottom: 20,
-                                }}>🔑</div>
+                                }}><IconKey color={c.teal} /></div>
                                 <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 27, fontWeight: 600, color: c.text, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
                                     Reset password
                                 </h1>

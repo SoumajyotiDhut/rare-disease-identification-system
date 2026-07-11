@@ -6,6 +6,13 @@ const CONF = (c) => ({
     Low: { bg: c.redL, color: c.red, border: c.redB },
 });
 
+const IconAlert = ({ color }) => (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+        <path d="M10 2.5L18.5 17H1.5L10 2.5z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M10 8v4M10 14.5v.1" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+);
+
 export default function HistoryDrawer({ item, onClose }) {
     const { c } = useTheme();
     if (!item) return null;
@@ -172,9 +179,11 @@ export default function HistoryDrawer({ item, onClose }) {
                     <div style={{
                         marginTop: 24, padding: "14px 16px",
                         background: c.ambL, border: `1px solid ${c.ambB}`,
+                        display: "flex", gap: 10, alignItems: "flex-start",
                     }}>
+                        <div style={{ marginTop: 2 }}><IconAlert color={c.amber} /></div>
                         <p style={{ fontSize: 12, color: c.amber, margin: 0, lineHeight: 1.6 }}>
-                            <strong>⚠ Research use only.</strong> AI-generated predictions should not replace professional clinical judgment.
+                            <strong>Research use only.</strong> AI-generated predictions should not replace professional clinical judgment.
                         </p>
                     </div>
                 </div>
