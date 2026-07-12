@@ -302,7 +302,7 @@ export default function Home() {
                       background: c.bgDeep,
                     }}>
                       <img
-                        src="public/assets/doctor.png"
+                        src="/assets/doctor.png"
                         alt="Clinician reviewing an AI-assisted diagnostic report"
                         onError={() => setPhotoFailed(true)}
                         style={{
