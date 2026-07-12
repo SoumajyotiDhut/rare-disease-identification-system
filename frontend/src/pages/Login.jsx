@@ -267,7 +267,7 @@ export default function Login() {
                                     placeholder="••••••••" autoComplete="current-password"
                                     style={{ paddingRight: 48 }}
                                 />
-                                <button type="button" onClick={() => setShowPass(!showPass)} style={{
+                                <button type="button" onClick={() => setShowPass(!showPass)} aria-label={showPass ? "Hide password" : "Show password"} style={{
                                     position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
                                     background: "none", border: "none", cursor: "pointer",
                                     color: c.muted, fontSize: 16, padding: 0, lineHeight: 1,

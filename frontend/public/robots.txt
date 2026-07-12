@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rare-disease-identification-system.vercel.app/sitemap.xml

@@ -82,6 +82,7 @@ const CSS = (c) => `
     .feat-grid   { grid-template-columns:1fr!important }
     .steps-grid  { grid-template-columns:1fr 1fr!important; gap:36px!important }
     .hero-visual { display:none!important }
+    .odyssey-grid { grid-template-columns:1fr!important }
   }
   @media(max-width:600px){
     .stats-grid  { grid-template-columns:1fr!important }
@@ -94,6 +95,7 @@ const CSS = (c) => `
     .cta-banner-pad { padding:44px 26px!important }
     .cta-link-row { flex-direction:column!important; align-items:stretch!important }
     .cta-link-light, .cta-link-ghost { width:100%!important; justify-content:center!important }
+    .tech-row    { gap:20px!important }
   }
   @media(max-width:420px){
     .hero-title    { font-size:29px!important }
@@ -140,6 +142,33 @@ const STEPS = [
   { n: "IV", title: "Review Diagnoses", desc: "Ranked top-5 differential diagnoses appear with probability scores, confidence levels, and disease details." },
 ];
 
+const FAQS = [
+  {
+    q: "Does AI DOC replace a doctor's diagnosis?",
+    a: "No. AI DOC ranks likely rare diseases as a differential diagnosis aid — a starting point for a clinician's own investigation, not a final answer. Every prediction carries a confidence level, and the platform is built for research and clinical-support use only, not standalone diagnosis.",
+  },
+  {
+    q: "How accurate are the predictions?",
+    a: "On held-out test data, the symptom-only model reaches 34.73% top-1 accuracy across 62 tracked diseases. Combining symptoms with an uploaded scan through late-weighted fusion (0.65 symptom / 0.35 image) raises that to 58.39% top-1 and 83.87% top-5 — meaning the correct diagnosis appears somewhere in the top 5 ranked results the large majority of the time.",
+  },
+  {
+    q: "What data was the model trained on?",
+    a: "36,487 real, de-identified patient cases spanning 1,374 rare diseases from the ZebraMap dataset (CC BY 4.0), including 94,384 biomedical images across modalities like MRI, CT, fundus, dermoscopy, and histopathology.",
+  },
+  {
+    q: "Is my data kept private?",
+    a: "Symptom and image submissions are tied to your authenticated account (Firebase Auth) so you can review your own prediction history. This is a research-stage academic project, not a HIPAA-certified clinical system — please avoid submitting real patient-identifying information.",
+  },
+  {
+    q: "What image types can I upload?",
+    a: "MRI, CT, fundus photography, dermoscopy, and histopathology slides are supported, fine-tuned via EfficientNet-B4. An image is optional — the symptom model works on its own if you don't have a scan to attach.",
+  },
+  {
+    q: "Is AI DOC free to use?",
+    a: "Yes. This is an academic research project (PROJ-IT781), free to use for research and educational purposes.",
+  },
+];
+
 /** Thin "vital sign" line — the page's recurring signature mark */
 function VitalLine({ color, width = 160, height = 28 }) {
   return (
@@ -158,6 +187,7 @@ export default function Home() {
   const { user } = useAuth();
   const [analytics, setAnalytics] = useState(null);
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
     getAnalytics().then(setAnalytics).catch(() => { });
@@ -272,7 +302,7 @@ export default function Home() {
                       background: c.bgDeep,
                     }}>
                       <img
-                        src="/assets/doctor.jpg"
+                        src="public/assets/doctor.png"
                         alt="Clinician reviewing an AI-assisted diagnostic report"
                         onError={() => setPhotoFailed(true)}
                         style={{
@@ -471,6 +501,128 @@ export default function Home() {
                 <h3 style={{ fontFamily: "'Fraunces',serif", fontSize: 16.5, fontWeight: 600, color: c.text, margin: "0 0 10px" }}>{title}</h3>
                 <p style={{ fontSize: 13.5, color: c.sub, lineHeight: 1.7, margin: 0 }}>{desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── THE DIAGNOSTIC ODYSSEY ────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px", background: c.bgAlt }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>The Problem</span>
+            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 36, fontWeight: 600, color: c.text, margin: "18px 0 14px", letterSpacing: "-0.02em" }}>
+              The rare disease diagnostic odyssey
+            </h2>
+            <p style={{ fontSize: 15.5, color: c.sub, maxWidth: 620, margin: "0 auto", lineHeight: 1.7 }}>
+              According to EURORDIS's 2022 Rare Barometer survey of over 10,000 patients across 42 countries,
+              the path to a confirmed rare disease diagnosis is long — AI-assisted triage aims to shorten that first step.
+            </p>
+          </div>
+
+          <div className="odyssey-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: c.border, border: `1px solid ${c.border}` }}>
+            {/* Without */}
+            <div style={{ background: c.card, padding: "32px 30px" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: c.red, background: c.redL, border: `1px solid ${c.redB}`, padding: "4px 12px", borderRadius: 100, textTransform: "uppercase", letterSpacing: "0.06em" }}>Without AI Triage</span>
+              <div style={{ margin: "20px 0 18px" }}>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 40, fontWeight: 600, color: c.text }}>4.7</span>
+                <span style={{ fontSize: 15, color: c.muted, fontWeight: 600, marginLeft: 8 }}>years average</span>
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  "Average time from symptom onset to confirmed diagnosis",
+                  "60% of patients initially misdiagnosed with an unrelated condition",
+                  "25% waited more than 5 years for a confirmed diagnosis",
+                  "8+ specialist consultations on average before diagnosis",
+                ].map(t => (
+                  <li key={t} style={{ display: "flex", gap: 10, fontSize: 13.5, color: c.sub, lineHeight: 1.6 }}>
+                    <span style={{ color: c.red, flexShrink: 0 }}>—</span>{t}
+                  </li>
+                ))}
+              </ul>
+              <p style={{ fontSize: 11, color: c.faint, margin: "20px 0 0" }}>Source: EURORDIS Rare Barometer Survey, 2022</p>
+            </div>
+
+            {/* With */}
+            <div style={{ background: c.card, padding: "32px 30px" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: c.teal, background: c.tealL, border: `1px solid ${c.tealB}`, padding: "4px 12px", borderRadius: 100, textTransform: "uppercase", letterSpacing: "0.06em" }}>With AI DOC</span>
+              <div style={{ margin: "20px 0 18px" }}>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 40, fontWeight: 600, color: c.teal }}>~10</span>
+                <span style={{ fontSize: 15, color: c.muted, fontWeight: 600, marginLeft: 8 }}>seconds to a ranked differential</span>
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  "Instant top-5 differential from symptoms alone, or symptoms plus a scan",
+                  "Every result includes a probability score and confidence level",
+                  "Trained across 1,374 rare diseases from 36,487 real patient cases",
+                  "A starting point clinicians can use to guide next steps, not a final answer",
+                ].map(t => (
+                  <li key={t} style={{ display: "flex", gap: 10, fontSize: 13.5, color: c.sub, lineHeight: 1.6 }}>
+                    <span style={{ color: c.teal, flexShrink: 0 }}>✓</span>{t}
+                  </li>
+                ))}
+              </ul>
+              <p style={{ fontSize: 11, color: c.faint, margin: "20px 0 0" }}>Research-use decision-support tool, not a substitute for clinical judgment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      <section className="section-pad" style={{ padding: "88px 32px" }}>
+        <div style={{ maxWidth: 780, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>Questions</span>
+            <h2 style={{ fontFamily: "'Fraunces',serif", fontSize: 32, fontWeight: 600, color: c.text, margin: "18px 0 0", letterSpacing: "-0.02em" }}>
+              Frequently asked
+            </h2>
+          </div>
+
+          <div style={{ border: `1px solid ${c.border}` }}>
+            {FAQS.map(({ q, a }, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={q} style={{ borderBottom: i < FAQS.length - 1 ? `1px solid ${c.border}` : "none", background: c.card }}>
+                  <button
+                    onClick={() => setOpenFaq(open ? -1 : i)}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                      gap: 16, padding: "20px 24px", background: "none", border: "none", cursor: "pointer",
+                      textAlign: "left", fontFamily: "'Fraunces',serif", fontSize: 15.5, fontWeight: 600,
+                      color: c.text, letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {q}
+                    <span style={{
+                      flexShrink: 0, width: 22, height: 22, borderRadius: 4, border: `1px solid ${c.borderI}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 14, color: c.teal, transform: open ? "rotate(45deg)" : "none", transition: "transform .2s",
+                    }}>+</span>
+                  </button>
+                  {open && (
+                    <div style={{ padding: "0 24px 22px", animation: "fadeUp .25s ease both" }}>
+                      <p style={{ fontSize: 13.5, color: c.sub, lineHeight: 1.75, margin: 0, maxWidth: 640 }}>{a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TECH STACK BAR ────────────────────────────────────────────────── */}
+      <section style={{ padding: "0 32px 88px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
+          <p style={{ fontSize: 10.5, fontWeight: 700, color: c.muted, textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 24px" }}>
+            Built With
+          </p>
+          <div className="tech-row" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 40, flexWrap: "wrap" }}>
+            {["React", "Vite", "Firebase", "EfficientNet-B4", "scikit-learn", "Vercel"].map(name => (
+              <span key={name} style={{
+                fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 600,
+                color: c.faint, letterSpacing: "0.02em",
+              }}>{name}</span>
             ))}
           </div>
         </div>

@@ -277,8 +277,8 @@ export default function Predict() {
 
                 {preview ? (
                   <div style={{ position: "relative", borderRadius: 4, overflow: "hidden", border: `1px solid ${c.tealB}` }}>
-                    <img src={preview} alt="Preview" style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
-                    <button onClick={() => { setImage(null); setPreview(null); }} style={{
+                    <img src={preview} alt="Preview of uploaded medical scan" style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
+                    <button onClick={() => { setImage(null); setPreview(null); }} aria-label="Remove uploaded scan" style={{
                       position: "absolute", top: 10, right: 10,
                       width: 32, height: 32, borderRadius: 4,
                       background: "rgba(0,0,0,0.6)", border: "none",

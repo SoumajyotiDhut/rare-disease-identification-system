@@ -247,7 +247,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile hamburger */}
-          <button className="mobile-toggle" onClick={() => setOpen(!open)}>
+          <button className="mobile-toggle" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
             <span style={{ transform: open ? "rotate(45deg) translate(5px,5px)" : "none" }} />
             <span style={{ opacity: open ? 0 : 1 }} />
             <span style={{ transform: open ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
@@ -301,7 +301,7 @@ export default function Navbar() {
               <span style={{ fontSize: 11.5, color: c.muted, fontFamily: "'IBM Plex Mono',monospace", letterSpacing: "0.05em" }}>
                 {time}
               </span>
-              <button className="theme-btn" onClick={() => setDark(!dark)}>{dark ? <IconSun /> : <IconMoon />}</button>
+              <button className="theme-btn" onClick={() => setDark(!dark)} aria-label="Toggle theme">{dark ? <IconSun /> : <IconMoon />}</button>
             </div>
           </div>
         )}

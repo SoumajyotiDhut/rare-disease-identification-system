@@ -79,7 +79,7 @@ export default function HistoryDrawer({ item, onClose }) {
                                 : "Timestamp unavailable"}
                         </p>
                     </div>
-                    <button onClick={onClose} style={{
+                    <button onClick={onClose} aria-label="Close details panel" style={{
                         width: 34, height: 34, borderRadius: 4,
                         border: `1px solid ${c.border}`, background: c.cardAlt,
                         color: c.sub, cursor: "pointer", fontSize: 14,

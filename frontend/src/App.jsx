@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+import ChatWidget from "./components/ChatWidget";
 
 /**
  * Inner component so it can call useTheme() — must be inside ThemeProvider.
@@ -64,6 +65,7 @@ function AppShell() {
         </Routes>
       </PageTransition>
       <Footer />
+      <ChatWidget />
     </div>
   );
 }

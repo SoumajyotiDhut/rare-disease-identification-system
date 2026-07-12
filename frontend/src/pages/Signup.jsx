@@ -234,7 +234,7 @@ export default function Signup() {
                                 <input type={showPass ? "text" : "password"} value={password} className="auth-input"
                                     onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters"
                                     autoComplete="new-password" style={{ paddingRight: 48 }} />
-                                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: c.muted, fontSize: 15, padding: 0 }}>
+                                <button type="button" onClick={() => setShowPass(!showPass)} aria-label={showPass ? "Hide password" : "Show password"} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: c.muted, fontSize: 15, padding: 0 }}>
                                     {showPass ? <IconEyeOff color={c.muted} /> : <IconEye color={c.muted} />}
                                 </button>
                             </div>
