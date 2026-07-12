@@ -3,6 +3,7 @@ import {
     getAuth,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithCredential,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
@@ -10,6 +11,8 @@ import {
     updateProfile,
     sendPasswordResetEmail,
 } from "firebase/auth";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -36,9 +39,42 @@ export const signUpWithEmail = (email, password, displayName) =>
 export const signInWithEmail = (email, password) =>
     signInWithEmailAndPassword(auth, email, password);
 
-export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
+/**
+ * Google Sign-In, platform-aware.
+ *
+ * WEB: unchanged — signInWithPopup works fine in a real browser.
+ *
+ * NATIVE (Capacitor/iOS/Android): signInWithPopup fails inside embedded
+ * WebViews — Google actively blocks OAuth from what it detects as an
+ * embedded user agent (commonly surfaces as "Error 403:
+ * disallowed_useragent"). Instead we use @capacitor-firebase/authentication,
+ * which opens the OS's native Google account picker, then hands back a
+ * credential that we sign into the SAME firebase/auth `auth` object with.
+ * This keeps onAuthStateChanged/AuthContext working identically regardless
+ * of platform — nothing else in the app needs to know or care which path
+ * was used.
+ */
+export const signInWithGoogle = async () => {
+    if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = result?.credential?.idToken;
+        const accessToken = result?.credential?.accessToken;
+        if (!idToken) {
+            throw new Error("Native Google sign-in did not return a credential.");
+        }
+        const credential = GoogleAuthProvider.credential(idToken, accessToken);
+        return signInWithCredential(auth, credential);
+    }
+    return signInWithPopup(auth, googleProvider);
+};
 
-export const logOut = () => signOut(auth);
+export const logOut = async () => {
+    if (Capacitor.isNativePlatform()) {
+        // Keep native Google session and JS SDK session in sync on sign-out too
+        await FirebaseAuthentication.signOut().catch(() => { });
+    }
+    return signOut(auth);
+};
 
 export const resetPassword = (email) => sendPasswordResetEmail(auth, email);
 
