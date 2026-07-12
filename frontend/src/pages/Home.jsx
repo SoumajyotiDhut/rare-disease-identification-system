@@ -123,7 +123,7 @@ const FEATURES = [
   },
   {
     mark: "03", title: "Multimodal Fusion",
-    desc: "Late-weighted fusion combines both signals at optimal 0.9/0.1 weights, boosting Top-1 accuracy to 58.39% — a +23.66% improvement.",
+    desc: "Late-weighted fusion combines both signals at optimal 0.65/0.35 weights, boosting Top-1 accuracy to 58.39% — a +23.66% improvement.",
     color: "purple", badge: "58.39% Top-1",
   },
   {
@@ -136,7 +136,7 @@ const FEATURES = [
 const STEPS = [
   { n: "I", title: "Describe Symptoms", desc: "Type patient symptoms in natural language. Quick-add chips help you select common presentations fast." },
   { n: "II", title: "Upload Medical Scan", desc: "Optionally upload any biomedical image — MRI, CT, dermoscopy, fundus or histopathology scan." },
-  { n: "III", title: "AI Analyses Input", desc: "Models run in parallel: TF-IDF+LR for symptoms, EfficientNet-B4 for images, then fused at 0.9/0.1 weights." },
+  { n: "III", title: "AI Analyses Input", desc: "Models run in parallel: TF-IDF+LR for symptoms, EfficientNet-B4 for images, then fused at 0.65/0.35 weights." },
   { n: "IV", title: "Review Diagnoses", desc: "Ranked top-5 differential diagnoses appear with probability scores, confidence levels, and disease details." },
 ];
 

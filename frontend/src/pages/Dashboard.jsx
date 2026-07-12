@@ -58,7 +58,7 @@ const CSS = (c) => `
 const MODEL_BENCHMARKS = [
   { name: "TF-IDF + Logistic Regression", metric: "Top-1 Accuracy", value: 34.73, color: "teal", note: "Symptoms only · 62 Tier-A diseases" },
   { name: "EfficientNet-B4", metric: "Image Classification", value: 61.2, color: "blue", note: "Fine-tuned on 35K+ biomedical images" },
-  { name: "Late-Weighted Fusion", metric: "Top-1 Accuracy", value: 58.39, color: "purple", note: "0.9 / 0.1 symptom-image weighting" },
+  { name: "Late-Weighted Fusion", metric: "Top-1 Accuracy", value: 58.39, color: "purple", note: "0.65 / 0.35 symptom-image weighting" },
   { name: "Late-Weighted Fusion", metric: "Top-5 Accuracy", value: 83.87, color: "purple", note: "Ranked differential diagnosis" },
   { name: "FastGAN Augmentation", metric: "Accuracy (Ultra-rare)", value: 87.97, color: "amber", note: "Synthetic data beats full-data baseline" },
 ];
